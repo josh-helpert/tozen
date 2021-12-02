@@ -909,6 +909,7 @@ All of the notation defined so far:
 ()        // Grouping for explicit precedence
 =         // Name to Value Operator
 //        // Comment
+//-       // Document String
 ''        // Verbatim String
 ""        // String Literal (supports escaping)
 -         // Negative Unary Operator
