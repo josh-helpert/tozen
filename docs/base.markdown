@@ -5,18 +5,12 @@ description: A minimal, data-oriented, and expressive syntax
 permalink: base
 ---
 
-Tozen is stratified into multiple levels which grow in ability but reduce the guarantees they can provide.
-This scales from a near trivial data description language to a full turing-complete language.
-
 This document describes the lowest level of the Tozen language which is primarily useful for data modeling, data representation, and serialization.
 It's expressiveness roughly correlates with languages like JSON.
 
 Many higher level syntaxes are more expressive but ultimately reduce to this core syntax.
 Keeping the set of core elements simple makes it easier for tools to be developed for it.
 It is also rare that a developer will use it directly as the higher level syntaxes are more ergonomic.
-
-The Tozen syntax can be used alone but is the preferred syntax of the Tozen language.
-Must how S-expressions are separate from any LISP implementation but is the most commonly used syntax.
 
 
 ## Literals
@@ -891,6 +885,33 @@ Although allowing optional names provides some utility:
 * Easier to merge assignment and attribute description syntax 
 * Names can be added for zero computation cost and a minimal amount of added complexity
 
+### Prioritizing Names
+
+When designing a language there are many different conventions that can be selected from.
+One commonly chosen is to start declarations using qualifiers, (eg `const`, `volatile`), modifiers (eg `long`, `short`), keywords (eg `volatile`, `auto`, `static`), types, or many others before a name.
+
+Since there are potentially numerous ways to constrain, define, and describe a definition we take an alternate approach and put the name first.
+
+Names starting the line is easier for understanding the structure, shape, and flow of code.
+Modifiers, constraints, and other syntax for declarations are significant as well but we've created alternative syntax to describe them.
+
+This choice has a few effects like:
+* Names almost always start a line
+  * This make data-definition and L-hand assignment consistent which is very common
+  * It makes it easier to browse and grok the shape of the data or block the developer is looking at
+  * It's easier to align elements into logical units where names are on the left, values are on the right, and how they relate to one another is in the middle (often assignment `=`)
+  * The syntax is more regular between data declaration, definition, usage, and description
+* We don't have special syntax, modifiers, or operators before or surrounding names.
+  Instead the operators, relators, and values are used to specify these.
+  * Generally names and relators describe where, values describe what, and relators describe how.
+* As Elder is used in different domains, it will become more common for developers to introduce their own data, types, keywords, and more.
+  Requiring a consistent pattern of name then relation (often `=`), then value provides some consistency
+* Since Elder syntax can be used in different paradigms (eg declarative, logic, and procedural to name a few) it is more consistent
+  * This is because the additional information, rules, fields, etc. will always follow after the name
+* Names act like their own namespace where their attributes, metadata, and other details are described within it.
+  * Defining a context and then it's details within it will become a common pattern.
+    Names first make this even more consistent.
+
 
 ## Summary
 ------------------------------------------------------------------------------------------------------------
@@ -910,7 +931,7 @@ All of the notation defined so far:
 =         // Name to Value Operator
 //        // Comment
 //-       // Document String
-''        // Verbatim String
+''        // Verbatim String Literal
 ""        // String Literal (supports escaping)
 -         // Negative Unary Operator
 \         // Escape and line continuation
