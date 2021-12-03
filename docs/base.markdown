@@ -887,13 +887,15 @@ Although allowing optional names provides some utility:
 
 ### Prioritizing Names
 
-When designing a language there are many different conventions that can be selected from.
+When designing a language there are many different naming layout conventions that can be selected from.
 One commonly chosen is to start declarations using qualifiers, (eg `const`, `volatile`), modifiers (eg `long`, `short`), keywords (eg `volatile`, `auto`, `static`), types, or many others before a name.
 
-Since there are potentially numerous ways to constrain, define, and describe a definition we take an alternate approach and put the name first.
+Since there are potentially numerous ways to constrain, define, bind, and describe a definition.
+We take an alternate approach and put the name first.
 
 Names starting the line is easier for understanding the structure, shape, and flow of code.
 Modifiers, constraints, and other syntax for declarations are significant as well but we've created alternative syntax to describe them.
+We can also feel free to add as many constraints with minimal loss in the flow of the code.
 
 This choice has a few effects like:
 * Names almost always start a line
@@ -904,9 +906,9 @@ This choice has a few effects like:
 * We don't have special syntax, modifiers, or operators before or surrounding names.
   Instead the operators, relators, and values are used to specify these.
   * Generally names and relators describe where, values describe what, and relators describe how.
-* As Elder is used in different domains, it will become more common for developers to introduce their own data, types, keywords, and more.
+* As Tozen is used in different domains, it will become more common for developers to introduce their own data, types, keywords, and more.
   Requiring a consistent pattern of name then relation (often `=`), then value provides some consistency
-* Since Elder syntax can be used in different paradigms (eg declarative, logic, and procedural to name a few) it is more consistent
+* Since Tozen syntax can be used in different paradigms (eg declarative, logic, and procedural to name a few) it is more consistent
   * This is because the additional information, rules, fields, etc. will always follow after the name
 * Names act like their own namespace where their attributes, metadata, and other details are described within it.
   * Defining a context and then it's details within it will become a common pattern.
