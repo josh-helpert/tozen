@@ -8,9 +8,13 @@ A language that can be used from systems programming to front-end styling.
 It achieves this trick by combining a few techniques:
 * stratification
   * chose minimal amount of features in order for compiler providing more guarantees
-* data-oriented syntax (ripe for external tools, analysis, and synthesis)
-* comptime, MSP (both? others? fexpr?)
+* data-oriented syntax
+  * making it easier to create external tools, analysis, and synthesis
+  * similar to how S-expressions are easy to reason on
+* zero-cost abstractions
+  * comptime, MSP (both? others? fexpr?)
 * contexts, dialecting, and reinterpreting syntax
+  * 
 * others?
   * rulesets
     * some provable and some not
@@ -31,6 +35,7 @@ Tozen is stratified from a simple data-description language to a general purpose
       * value-only syntaxes like StrictYAML
 * Erasable (or at least nearly? or fully?)
   * features:
+    * relator select
     * variables
     * substitution
     * simple logic
@@ -46,19 +51,27 @@ Tozen is stratified from a simple data-description language to a general purpose
     * custom DSL like Pug, SASS, Markdown
 * Finite
   * features:
+    * 
   * potentially:
     * deterministic (time, memory, execution)
     * constrained/finite dependent types
     * turing-incompleteness
   * comparable to:
+    * 
 * Comptime Only (no runtime cost, memory, or execution)
   * features:
+    * 
   * potentially:
+    * 
   * comparable to:
+    * 
 * General Purpose
   * features:
+    * 
   * potentially:
+    * 
   * comparable to:
+    * 
 
 Tozen documentation is broken into a few parts.
 
