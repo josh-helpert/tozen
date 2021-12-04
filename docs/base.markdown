@@ -692,6 +692,20 @@ o =
 
 On top of looking ackward, this will conflict with higher levels of the syntax.
 
+### Mixing `None` with Relators
+
+It is invalid to mix `None` with Relators.
+
+`None` is unique in that it doesn't allow for anything else related to the name.
+
+This is invalid:
+```
+x = None
+  .a = 1
+  :b = 2
+  /c = 3
+```
+
 
 ## Edge-Cases, Ambiguities, and Quirks
 ------------------------------------------------------------------------------------------------------------
