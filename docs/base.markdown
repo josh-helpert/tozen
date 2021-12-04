@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Base
-description: A minimal, data-oriented, and expressive syntax
+description: Base layer of Tozen for data representation
 permalink: base
 ---
 
@@ -287,26 +287,6 @@ staff =
 
 Here we create a data description of a sample of staff.
 Each staff name point to records which hold their properties.
-
-### Multiple Values
-
-Due to precedence, parenthesis must be used for multiple values:
-```
-x         = (1, 2, 3)             // Assign name 'x' to simple record
-x         = (a = 1, b = 2, c = 3) // Assign name 'x' to more complex record
-(x, y, z) = (1, 2, 3)             // Assign each name to each value like: (x = 1), (y = 2), (z = 3)
-(x, y, z) = (a = 1, b = 2, c = 3) // Assign each name to each record entry like: x = (a = 1), y = (b = 2), z = (c = 3)
-```
-
-It is illegal to set multiple names to a single value.
-For consistency, they must always be equal in arity:
-```
-(x, y, z) = 1              // Illegal
-(x, y, z) = (1, 2)         // Illegal
-(x, y, z) = (1, 2, 3)      // Works
-(x, y, z) = (1, 2, 3, 4)   // Illegal
-(x, y, z) = (1, 2, (3, 4)) // Works b/c now element arity matches which causes: z = (3, 4)
-```
 
 ### Nesting
 
