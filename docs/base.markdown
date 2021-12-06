@@ -941,10 +941,12 @@ None      // No Value Literal
 
 ### Precedence
 
-The precedence table so far is relatively simple:
-```
-Explicit        // Only parentheses for explicit grouping like `x = (1, 2, 3)`
-Unary + Prefix  // Currently only unary operator is negative like `-4`
-Assign          // Unique precedence for assignment like `x = -4`
-Delimiter       // Record delimiter like `x = 1, y = 2, z = 3`
-```
+The precedence table so far is relatively simple (high to low):
+* Parentheses
+  * eg `x = (1, 2, 3)`
+* Prefixed, Unary Operator
+  * eg `-4`, `+4`
+* Infix Assign
+  * eg `x = 1 2 3`
+* Comma Delimiter
+  * eg `x = 1, 2, 3`
