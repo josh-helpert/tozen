@@ -255,6 +255,7 @@ If a developer wants something more complex then they will need to write the ful
 
 TODO
 
+
 ## Anonymous Children
 ------------------------------------------------------------------------------------------------------------
 
@@ -489,6 +490,15 @@ x:y.
   c = 2
 ```
 
+Form useful to mix paths with structure:
+```
+x:
+  y.
+    a = 0
+    b = 1
+    c = 2
+```
+
 Form useful inline:
 ```
 x:y.(a = 0, b = 1, c = 2)
@@ -532,7 +542,7 @@ It's impossible to represent default relators inline:
 x/y/z/(a = 0, b = 1, c = 2)
 ```
 
-In more complex layers it is possible to change the default relator.
+In later layers it is possible to change the default relator.
 
 ### Path
 
@@ -608,6 +618,7 @@ html/body/header.style.css.
 
 We can use paths to collapse the heirarchy from above to what we really are concerned about.
 
+
 ## Summary
 ------------------------------------------------------------------------------------------------------------
 
@@ -634,11 +645,28 @@ _         // Alias for `None`
 
 ### Precedence
 
-The updated precedence table:
-```
-Explicit             // Only parentheses for explicit grouping like `x = (1, 2, 3)`
-Inline Relator Path  // Path to a relator like `o/p:x`
-Unary + Prefix       // Currently only unary operator is negative like `-4`
-Assign               // Unique precedence for assignment like `x = -4`
-Delimiter            // Record delimiter like `x = 1, y = 2, z = 3`
-```
+The updated precedence table (high to low):
+* Parentheses
+  * eg `x = (1, 2, 3)`
+* Inline Relator
+  * eg `o.p:q/r`
+* Prefixed, Unary Operator
+  * eg `-4`, `+4`
+* Space Delimiter
+  * eg `x = 1 2 3`
+* Infix Assign & Infer
+  * eg `x = 1 2 3` `x : 1 2 3`
+* Comma Delimiter
+  * eg `x = 1, 2, 3`
+* Semicolon Delimiter
+  * eg `x = 1; 2; 3`
+* Pipe Delimiter
+  * eg `x = 1 | 2 | 3`
+* Newline Delimiter
+  * eg
+    ```
+    x =
+      1
+      2
+      3
+    ```
