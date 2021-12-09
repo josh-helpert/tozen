@@ -456,9 +456,9 @@ For consistency, they must always be equal in arity:
 ### Inline Definition Syntax
 
 Inline data definition can quickly become unreadable.
-Additionally it requires the developer to visually track nested expressions.
+It requires the developer to visually track nested expressions.
 
-In order to avoid confusion, there is only a constrained syntax form allowed.
+To avoid confusion, only a constrained syntax form is allowed inline.
 It is purposely constrained to have minimal visual noise and avoid complexity.
 
 Here are a few examples:
@@ -476,6 +476,8 @@ x .(a = 1) :(b = 2) /(c = 3) = 0
 x.y:z .(a = 1, 2, b = 3) :(c = 4, 5) /(6, 7) = 0
 ```
 Notice that:
+* the name is always at the start of the line (the leading name)
+* the leading name is what is being defined
 * each relator is delimited by spaces
 * each relator uses parentheses
 * the contents of each relator is a record
@@ -484,6 +486,7 @@ Notice that:
 In order to keep the syntax clear we don't allow nesting on the same line.
 Syntax like this is invalid:
 ```
+// 'a' cannot be nested in 'x' within inline form
 x .(1, a :(2, 3, 4), 5) = 0
 ```
 
