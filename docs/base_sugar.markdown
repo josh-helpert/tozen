@@ -453,6 +453,53 @@ For consistency, they must always be equal in arity:
 ## Relators
 ------------------------------------------------------------------------------------------------------------
 
+### Inline Definition Syntax
+
+Inline data definition can quickly become unreadable.
+Additionally it requires the developer to visually track nested expressions.
+
+In order to avoid confusion, there is only a constrained syntax form allowed.
+It is purposely constrained to have minimal visual noise and avoid complexity.
+
+Here are a few examples:
+```
+// Name with single relator
+x .(a = 1)
+
+// Name with value and single relator
+x .(a = 1) = 0
+
+// Name with value and multiple relators
+x .(a = 1) :(b = 2) /(c = 3) = 0
+
+// Path to name with value and multiple relators
+x.y:z .(a = 1, 2, b = 3) :(c = 4, 5) /(6, 7) = 0
+```
+Notice that:
+* each relator is delimited by spaces
+* each relator uses parentheses
+* the contents of each relator is a record
+* the value for the leading name is always last
+
+In order to keep the syntax clear we don't allow nesting on the same line.
+Syntax like this is invalid:
+```
+x .(1, a :(2, 3, 4), 5) = 0
+```
+
+and would need to be converted to the multiline form like:
+```
+x = 0
+  .
+    1
+    a :(2, 3, 4)
+    5
+```
+
+An effect of this is that this sugar only works for the start of a line.
+This keeps the syntax more clear and consistent.
+Which means developers spend less time visually tracking nested expressions.
+
 ### Shape of Data
 
 Code is easier to understand when the shape of the code follows the shape of the data. 
@@ -499,15 +546,15 @@ x:
     c = 2
 ```
 
-Form useful inline:
+Form useful inline and grouped together to better visualize common relators:
 ```
-x:y.(a = 0, b = 1, c = 2)
+x:y .(a = 0, b = 1, c = 2)
 ```
 
 Flexibility is allowed because there are many different shapes to data.
 We should allow the developer to model the structure in the most direct and applicable way.
 
-Generally, developers should prefer the structure which best models the data layout as directly as possible.
+In general, developers should prefer the structure which best models the data layout as directly as possible.
 
 ### Default Relator
 
@@ -515,7 +562,7 @@ When no relator is provided, the default is the parent-child relator `/`.
 Indented elements indicate a parent-children relationship.
 
 Many languages use indentation or `/` to indicate children.
-Tozen uses a similar convention.
+Tozen uses the same convention.
 
 These are equivalent:
 ```
@@ -536,10 +583,10 @@ x
       c = 2
 ```
 
-It's impossible to represent default relators inline:
+It's impossible to represent default relators inline.
+You must use `/`:
 ```
-// Must use `/`
-x/y/z/(a = 0, b = 1, c = 2)
+x/y/z /(a = 0, b = 1, c = 2)
 ```
 
 In later layers it is possible to change the default relator.
@@ -619,6 +666,131 @@ html/body/header.style.css.
 We can use paths to collapse the heirarchy from above to what we really are concerned about.
 
 
+## Examples
+------------------------------------------------------------------------------------------------------------
+
+### Serialization Languages (like JSON, YAML, SDLang)
+
+Using the syntax so far we have enough to emulate various serialization languages.
+
+JSON is ubiquitous so let's see the difference.
+
+Consider a somewhat simple JSON example:
+```
+[
+  {
+    "department": "History",
+    "staff": [
+      {
+        "name": "Jane Janison",
+        "is-tenured": true
+      },
+      {
+        "name": "Billy Bane",
+      },
+      {
+        "name": "Katie Kattson",
+        "is-assistant": true
+      },
+    ]
+  },
+  {
+    "department": "Mathematics",
+    "staff": [],
+  },
+  {
+    "department": "Biology",
+    "staff": [
+      {
+        "name": "Dirk Darwin",
+        "specialization": "Evolutionary",
+        "teacher-assistants": [
+        ]
+      },
+      {
+        "name": "Ellen Erickson",
+        "teacher-assistants": [
+          {
+            "name": "John Johnson"
+          }
+        ]
+      },
+    ],
+  },
+]
+```
+
+We can recreate with Tozen:
+```
+[
+  - department : History
+    staff = [
+      - name         : Jane Janison
+        is-tenured   : True
+      - name         : Billy Bane
+      - name         : Katie Kattson
+        is-assistant : True
+  - department : Mathematics
+    staff      : []
+  - department : Biology
+    staff = [
+      - name               : Dirk Darwin
+        specialization     : Evolutionary
+        teacher-assistants : []
+      - name : Ellen Erickson
+        teacher-assistants = [
+          name : John Johnson
+```
+
+Although it is more terse, it's not perfect.
+There's more to do in order to remove repetition in the shape and structure of the data.
+
+Later on it can be simplified further as we introduce new concepts.
+
+## HTML 
+
+We can model some simple declarative languages as well.
+
+Consider a simple header in HTML:
+```
+<html>
+  <body>
+    <div class="header home-header" style="width = 100%, height=20px">
+      <h2>Home</h2>
+      <p class="header-description home-header-description" style="font-size=18">Welcome Home</p>
+    </div>
+  </body>
+</html>
+```
+
+We can rewrite in the multiline form:
+```
+html/head/div
+  .class : header home-header
+  .style
+    .width  : 100%
+    .height : 20px
+  h2 : Home
+  p  : Welcome Home
+    .class : header-description home-header-description
+    .style
+      font-size = 18
+```
+
+as well as a more compact inline form:
+```
+html/head/div.(class : header home-header, style.(width : 100%, height : 20px))
+  h2 : Home
+  p  : Welcome Home
+    .class : header-description home-header-description
+    .style
+      font-size = 18
+```
+
+Like the serialization example there's still some visual noise but it's still relatively terse.
+In later sections we'll add more abstractions to reduce the noise.
+
+
 ## Summary
 ------------------------------------------------------------------------------------------------------------
 
@@ -635,11 +807,10 @@ New notation:
 ```
 _         // Alias for `None`
 ` `       // Space Delimiter
-,         // Comma Delimiter
 ;         // Semicolon Delimiter
 |         // Pipe Delimiter
 \n        // Newline Delimiter
-:         // Data Inference Operator
+:         // Data Inference Infix Operator
 -, *      // At start-of-line indicate anonymous item
 ```
 
