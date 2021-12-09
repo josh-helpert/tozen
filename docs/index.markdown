@@ -2,7 +2,7 @@
 layout: default
 ---
 
-Tozen's goal is to be a full-stack, optimal, and meta-programmable language.
+Tozen's goal is to be a full-stack, meta-programmable, and optimal language.
 A language that can be used from systems programming to front-end styling.
 
 It achieves this trick by combining a few techniques:
@@ -19,8 +19,16 @@ It achieves this trick by combining a few techniques:
   * rulesets
     * some provable and some not
 
-Tozen is stratified from a simple data-description language to a general purpose language:
-* Base
+Tozen is stratified from a simple data-description language to a general purpose language.
+Each level is broken into two parts:
+* the base level which is the minimial, consistent language useful for analysis and generation by programs
+* the sugar level which is the more ergonomic, productive language useful for developers
+
+As levels grow in complexity they lose compiler guarantees.
+It is often best to use the simplest level possible which allows the compiler to do more optimizations and verification on your behalf.
+
+The levels are:
+* Core
   * features:
     * literals
     * records
@@ -79,4 +87,3 @@ Tozen documentation is broken into a few parts.
 [Base](./base) The essentials of Tozen syntax which is necessary for every implementation. Is meant for program synthesis not developers.
 
 [Base Sugar](./base_sugar) Ergonomic version of [Base](./base) meant for developers and not program synthesis.
-
