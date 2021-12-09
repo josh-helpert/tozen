@@ -676,6 +676,20 @@ x = a = 1   // Invalid b/c due to precedence reads as `(x = a) = 1`
 x = (a = 1) // Valid b/c precedence is explicit again
 ```
 
+### `None` is `None`
+
+It's invalid to use `None` for both name and value.
+
+Each of these are invalid:
+```
+None = None
+
+o.
+  None = None
+
+o.(None = None)
+```
+
 ### Integral Literal Record Names
 
 In higher levels of Tozen the indexes of records will be used to query and define.
@@ -706,6 +720,33 @@ x = None
   /c = 3
 ```
 
+### Inline Overwrite
+
+Consider the simple example:
+```
+(x = 0) = 1
+```
+
+This is read as:
+* Assign `x` to `0`
+* Get result of `x = 0` expression
+* Assign result to `1`
+
+Elder doesn't allow this syntax and will emit a syntax error.
+
+The reasoning is that code like this will lead to more bugs than useful use-cases.
+
+Instead to assign multiple values to the same name you need to do so using multiple statements:
+```
+x = 0
+x = 1
+```
+
+This makes the intent more clear.
+
+It has the added benefit of a user doesn't have to visually track which names are used multiple times as they can be confident they're not redefined.
+Even in complex statements this makes it slighly easier to mentally parse.
+
 
 ## Edge-Cases, Ambiguities, and Quirks
 ------------------------------------------------------------------------------------------------------------
@@ -718,7 +759,7 @@ As the syntax grows more complex there will be more quirks which will be make ex
 
 Idenfiers which are nested don't refer to the same name.
 
-Here `a` refers to different names in each case:
+Here `a` refers to different names in each line:
 ```
 a = 0
 x = (a = 1)
@@ -884,12 +925,12 @@ Although allowing optional names provides some utility:
 When designing a language there are many different naming layout conventions that can be selected from.
 One commonly chosen is to start declarations using qualifiers, (eg `const`, `volatile`), modifiers (eg `long`, `short`), keywords (eg `volatile`, `auto`, `static`), types, or many others before a name.
 
-Since there are potentially numerous ways to constrain, define, bind, and describe a definition.
-We take an alternate approach and put the name first.
+To correctly model a problem developers should be able to add as many constraints as they need.
+Since these can be numerous, we take an alternate approach and put the name first.
 
 Names starting the line is easier for understanding the structure, shape, and flow of code.
 Modifiers, constraints, and other syntax for declarations are significant as well but we've created alternative syntax to describe them.
-We can also feel free to add as many constraints with minimal loss in the flow of the code.
+Also allows developers to feel free to add as many constraints as the problem needs with minimal loss in the flow of code.
 
 This choice has a few effects like:
 * Names almost always start a line
@@ -901,7 +942,7 @@ This choice has a few effects like:
   Instead the operators, relators, and values are used to specify these.
   * Generally names and relators describe where, values describe what, and relators describe how.
 * As Tozen is used in different domains, it will become more common for developers to introduce their own data, types, keywords, and more.
-  Requiring a consistent pattern of name then relation (often `=`), then value provides some consistency
+  Requiring a consistent pattern of name then relation (often `=`), then value provides some consistency.
 * Since Tozen syntax can be used in different paradigms (eg declarative, logic, and procedural to name a few) it is more consistent
   * This is because the additional information, rules, fields, etc. will always follow after the name
 * Names act like their own namespace where their attributes, metadata, and other details are described within it.
