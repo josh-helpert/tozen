@@ -261,7 +261,7 @@ TODO
 
 There are cases where we want to represent a record without a meaningful name.
 
-For example, consider the JavaScript code:
+For example, consider JavaScript nested arrays:
 ```
 let myElems = [
   [ a, [ b, c ], d ],
@@ -745,14 +745,14 @@ We can recreate with Tozen:
       - name         : Katie Kattson
         is-assistant : True
   - department : Mathematics
-    staff      : []
+    staff      : None
   - department : Biology
     staff = [
       - name               : Dirk Darwin
         specialization     : Evolutionary
-        teacher-assistants : []
+        teacher-assistants : None
       - name : Ellen Erickson
-        teacher-assistants = [
+        teacher-assistants =
           name : John Johnson
 ```
 
@@ -793,7 +793,7 @@ html/head/div
 
 as well as a more compact inline form:
 ```
-html/head/div.(class : header home-header, style.(width : 100%, height : 20px))
+html/head/div .(class : header home-header, style .(width : 100%, height : 20px))
   h2 : Home
   p  : Welcome Home
     .class : header-description home-header-description
