@@ -28,7 +28,7 @@ As levels grow in complexity they lose compiler guarantees.
 It is often best to use the simplest level possible which allows the compiler to do more optimizations and verification on your behalf.
 
 The levels are:
-* Core
+* Level 0 - Core
   * features:
     * literals
     * records
@@ -41,7 +41,7 @@ The levels are:
     * serialization and data-modeling
       * literals like JSON, YAML, SDLang, OGDL
       * value-only syntaxes like StrictYAML
-* Erasable (or at least nearly? or fully?)
+* Level 1 - Erasable (or at least nearly? or fully?)
   * features:
     * relator select
     * variables
@@ -57,7 +57,7 @@ The levels are:
   * comparable to:
     * schema like InternetObject, OGDL
     * custom DSL like Pug, SASS, Markdown
-* Finite
+* Level 2 - Finite
   * features:
     * 
   * potentially:
@@ -66,14 +66,14 @@ The levels are:
     * turing-incompleteness
   * comparable to:
     * 
-* Comptime Only (no runtime cost, memory, or execution)
+* Level 3 - Comptime Only (no runtime cost, memory, or execution)
   * features:
     * 
   * potentially:
     * 
   * comparable to:
     * 
-* General Purpose
+* Level 4 - General Purpose
   * features:
     * 
   * potentially:
