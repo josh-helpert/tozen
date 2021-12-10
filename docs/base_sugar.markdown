@@ -483,25 +483,32 @@ Notice that:
 * the contents of each relator is a record
 * the value for the leading name is always last
 
-In order to keep the syntax clear we don't allow nesting on the same line.
-Syntax like this is invalid:
-```
-// 'a' cannot be nested in 'x' within inline form
-x .(1, a :(2, 3, 4), 5) = 0
-```
+Once inline sugar is used, it's inline decendents must also follow the same rules.
+This means when something is defined it applies to the entire statement.
+Visually tracking nested expressions is not ideal.
+Having a guarantee that all the nested expressions act the same makes it a bit easier.
 
-and would need to be converted to the multiline form like:
+Here's an example:
 ```
+// 'x' uses the inline sugar form.
+// 'a', 'b', 'c' are within 'x' on the same line.
+// Thus they all must follow the same form as 'x'.
+x .(1, a :(2, 3, 4), b :(5, c .(6, 7, 8)) /(9) = 10, 11) = 0
+
+// equivalent to (and easier to read):
 x = 0
   .
     1
     a :(2, 3, 4)
-    5
+    b:
+      5
+      c .(6, 7, 8) /(9) = 10
+    11
 ```
 
-An effect of this is that this sugar only works for the start of a line.
-This keeps the syntax more clear and consistent.
-Which means developers spend less time visually tracking nested expressions.
+Sometimes nesting inline is necessary to model the data clearly.
+This rule provides some consistency and guarantees for those cases.
+Most of the time, developers should use the multiline forms as they're easier to read.
 
 ### Shape of Data
 
