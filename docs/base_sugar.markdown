@@ -507,6 +507,10 @@ x = 0
 ```
 
 Sometimes nesting inline is necessary to model the data clearly.
+For example, HTML tags with few attributes.
+It is more useful to view the overall structure of each tag and attributes.
+However, if there are too many attributes it makes more sense to make them multiline.
+
 This rule provides some consistency and guarantees for those cases.
 Most of the time, developers should use the multiline forms as they're easier to read.
 
