@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Base
+title: Base IR
 description: Base layer of Tozen for data representation
 permalink: base
 ---

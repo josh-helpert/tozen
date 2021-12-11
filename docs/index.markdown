@@ -21,7 +21,7 @@ It achieves this trick by combining a few techniques:
 
 Tozen is stratified from a simple data-description language to a general purpose language.
 Each level is broken into two parts:
-* the base level which is the minimial, consistent language useful for analysis and generation by programs
+* the IR level which is the minimial, consistent language useful for analysis and generation by programs
 * the sugar level which is the more ergonomic, productive language useful for developers
 
 As levels grow in complexity they lose compiler guarantees.
@@ -84,6 +84,6 @@ The levels are:
 Tozen documentation is broken into a few parts.
 
 ## Syntax
-[Base](./base) The essentials of Tozen syntax which is necessary for every implementation. Is meant for program synthesis not developers.
+[Base IR](./base) The essentials of Tozen syntax which is necessary for every implementation. Is meant for program synthesis not developers.
 
-[Base Sugar](./base_sugar) Ergonomic version of [Base](./base) meant for developers and not program synthesis.
+[Base Sugar](./base_sugar) Ergonomic version of [Base IR](./base) meant for developers and not program synthesis.
