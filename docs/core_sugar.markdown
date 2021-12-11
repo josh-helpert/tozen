@@ -1,14 +1,14 @@
 ---
 layout: default
-title: Base Sugar
-description: Sugar for [Tozen Base](./base)
-permalink: base-sugar
+title: Core Sugar
+description: Sugar for [Tozen Core](./core)
+permalink: core-sugar
 ---
 
-[Tozen Base](./base) is used by programs and not meant for developers to use directly.
+[Tozen Core](./core) is used by programs and not meant for developers to use directly.
 
-To make it more usable we add sugar which will emit [Tozen Base](./base).
-This makes the syntax more ergonomic for developers while allowing the [Tozen Base](./base) to stay minimal and consistent.
+To make it more usable we add sugar which will emit [Tozen Core](./core).
+This makes the syntax more ergonomic for developers while allowing the [Tozen Core](./core) to stay minimal and consistent.
 
 
 ## Alias for `None` using `_`
@@ -808,7 +808,7 @@ In later sections we'll add more abstractions to reduce the noise.
 ## Summary
 ------------------------------------------------------------------------------------------------------------
 
-This document describes the sugar for [Tozen Base](./base).
+This document describes the sugar for [Tozen Core](./core).
 
 It is flexible enough to express data and serialization languages like JSON, YAML, SDLang, etc.
 It can also expressive to handle some declarative languages like HTML.

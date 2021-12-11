@@ -19,13 +19,13 @@ It achieves this trick by combining a few techniques:
   * rulesets
     * some provable and some not
 
-Tozen is stratified from a simple data-description language to a general purpose language.
 Each level is broken into two parts:
 * the IR level which is the minimial, consistent language useful for analysis and generation by programs
-* the sugar level which is the more ergonomic, productive language useful for developers
+* the sugar level which is the more ergonomic, productive, and terse language useful for developers
 
 As levels grow in complexity they lose compiler guarantees.
-It is often best to use the simplest level possible which allows the compiler to do more optimizations and verification on your behalf.
+It is often best to use the simplest level possible.
+This allows the compiler to do more optimizations and verification on your behalf.
 
 The levels are:
 * Level 0 - Core

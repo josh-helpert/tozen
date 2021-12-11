@@ -1,8 +1,8 @@
 ---
 layout: default
-title: Base IR
-description: Base layer of Tozen for data representation
-permalink: base
+title: Core IR
+description: Core layer of Tozen for data representation
+permalink: core
 ---
 
 This document describes the lowest level of the Tozen language which is primarily useful for data modeling, data representation, and serialization.
