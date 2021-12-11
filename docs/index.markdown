@@ -9,7 +9,7 @@ It achieves this trick by combining a few techniques:
 * stratification
   * chose minimal amount of features in order for compiler providing more guarantees
 * data-oriented syntax
-  * making it easier to create external tools, analysis, and synthesis
+  * is it easier to create external tools, analysis, and synthesis
   * similar to how S-expressions are easy to reason on
 * zero-cost abstractions
   * comptime, MSP (both? others? fexpr?)
@@ -20,8 +20,8 @@ It achieves this trick by combining a few techniques:
     * some provable and some not
 
 Each level is broken into two parts:
-* the IR level which is the minimial, consistent language useful for analysis and generation by programs
-* the sugar level which is the more ergonomic, productive, and terse language useful for developers
+* the IR level which is a minimial, consistent language useful for analysis and generation by programs
+* the sugar level which is a ergonomic, productive, and terse language useful for developers
 
 As levels grow in complexity they lose compiler guarantees.
 It is often best to use the simplest level possible.
@@ -29,6 +29,8 @@ This allows the compiler to do more optimizations and verification on your behal
 
 The levels are:
 * Level 0 - Core
+  * description
+    * 
   * features:
     * literals
     * records
@@ -41,7 +43,9 @@ The levels are:
     * serialization and data-modeling
       * literals like JSON, YAML, SDLang, OGDL
       * value-only syntaxes like StrictYAML
-* Level 1 - Erasable (or at least nearly? or fully?)
+* Level 1 - Compiler Erased
+  * description
+    * 
   * features:
     * relator select
     * variables
@@ -58,6 +62,8 @@ The levels are:
     * schema like InternetObject, OGDL
     * custom DSL like Pug, SASS, Markdown
 * Level 2 - Finite
+  * description
+    * 
   * features:
     * 
   * potentially:
@@ -67,6 +73,8 @@ The levels are:
   * comparable to:
     * 
 * Level 3 - Comptime Only (no runtime cost, memory, or execution)
+  * description
+    * 
   * features:
     * 
   * potentially:
@@ -74,6 +82,8 @@ The levels are:
   * comparable to:
     * 
 * Level 4 - General Purpose
+  * description
+    * 
   * features:
     * 
   * potentially:
