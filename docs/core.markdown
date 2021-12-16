@@ -742,14 +742,15 @@ x = (a = 1) // Valid b/c precedence is explicit again
 
 It's invalid to use `None` for both name and value.
 
-Each of these are invalid:
+All of these are invalid:
 ```
 None = None
 
-o.
-  None = None
+o = (None = None)
 
-o.(None = None)
+o
+  .
+    None = None
 ```
 
 ### Integral Literal Record Names
