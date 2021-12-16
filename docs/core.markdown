@@ -1,11 +1,11 @@
 ---
 layout: default
 title: Core IR
-description: Core layer of Tozen for data representation
+description: Core layer of Tozen
 permalink: core
 ---
 
-This document describes the lowest level of the Tozen language which is primarily useful for data modeling, data representation, and serialization.
+The lowest level of the Tozen language is primarily useful for data modeling, data representation, and serialization.
 It's expressiveness roughly correlates with languages like JSON.
 
 Many higher level syntaxes are more expressive but ultimately reduce to this core syntax.
@@ -13,29 +13,67 @@ Keeping the set of core elements simple makes it easier for tools to be develope
 It is also rare that a developer will use it directly as the higher level syntaxes are more ergonomic.
 
 
-## Literals
+## Basic Types and Literals
 ------------------------------------------------------------------------------------------------------------
 
-Tozen has a few literals types and values which have a universal interpretation.
+Tozen reserves some common types to assure they have a universal meaning.
+
+This doesn't mean they have the same cost or representation on each build target.
+For example, `I8` is implemented differently in `JavaScript` compared to the `JVM`.
+When types are available on a target, they are guaranteed to function the same even if have different costs.
+
+### Basic Types
+
+Basic types are directly represented by the environment they run on.
+Higher level types are often built using these.
+Often the target is LLVM but can also target many others like JavaScript, Java, the HTML DOM, etc.
+
+* Numeric
+  * Integral
+    * `Int` is the target environment default signed, integer (32 or 64 bit)
+    * `UInt` is the target environment default unsigned, integer (32 or 64 bit)
+    * `Nat` are positive `Int` (not including zero)
+    * `Whole` are positive `Int` (including zero)
+    * `I8, I16, I32, I64, I128` are sized, signed integers
+    * `U8, U16, U32, U64, U128` are sized, unsigned integers
+  * Floating Point (IEEE 754)
+    * `Float` is the target environment default floating point (32 or 64 bit)
+    * `F8, F16, F32, F64` are sized, signed floating point
+  * Decimal or Fixed Point
+    * Exact decimal until overflow
+    * `Fixed` is the target environment default fixed point (32 or 64 bit)
+    * `Fx8, Fx16, Fx32, Fx64` are sized, signed fixed point
+    * `UFx8, UFx16, UFx32, UFx64` are sized, unsigned fixed point
+  * Fraction
+    * Exact fraction until overflow
+    * `Frac` is the target environment default fraction (32 or 64 bit)
+    * `Frac8, Frac16, Frac32, Frac64` are sized, signed fixed point
+    * `UFrac8, UFrac16, UFrac32, UFrac64` are sized, unsigned fixed point
+* String
+  * `Verbatim` is for exact Strings
+  * `StringLiteral` is for escapable Strings
+* `Bool`
+  * Only possible values are `True` and `False` literal
+* `None`
+  * Only possible value is `None` literal
+
+### Literals
+
+Tozen has a few literals which is based on their canonical interpretation.
 
 This doesn't mean these values can't be cast (or interpreted) to other types but that the default interpretation must be consistent.
-
-### Literal Values
 
 These are values which are interpreted as known types to avoid unnecessary visual noise:
 * `Numeric` Literals
   * Integral `4`
-  * Decimal  `1.2`
-    * Floating point
+  * Decimal `1.2`
   * Fraction `22./7`
-    * Exact representation
-  * Percent  `98.75%`
-    * Fixed point
-  * Binary   `0b1010`
+  * Percent `98.75%`
+  * Binary `0b1010`
     * `b` must be lowercase to be more visually distinct from digits
-  * Octal    `0o744`
+  * Octal `0o744`
     * `o` must be lowercase to be more visually distinct from digits
-  * Hex      `0xF00D`
+  * Hex `0xF00D`
     * Hexidecimal alpha characters must be uppercase to make them visually distinct
     * `x` must be lowercase to be more visually distinct from digits and hex
   * Exponent `4e-2.5`
@@ -47,18 +85,41 @@ These are values which are interpreted as known types to avoid unnecessary visua
   * Represents no value
   * Both value and type are `None`
   * Not castable to other types (like `NULL` in most languages)
+* `Undefined` is value of variable if unspecified
+  * For native environments this often means it points to garbage memory
+  * The compiler will almost never you use a value with `Undefined`
+* Limits and Errors
+  * `Inf` represents infinity
+  * `-Inf` represents negative infinity
+  * `DivByZero` represents divide by zero error
+* Constants
+  * `Pi` Archimedes constant
 
-### No Value
+### Numeric Literals
+
+When numeric literals are lexed/parsed their metadata information is discovered like:
+* is signed
+* is decimal
+* magnitude of value
+  * this also means literals have no size limitation
+
+When type is not specified, the type is inferred based on metadata at its usage.
+Multiple files could share the same literal and interpret it differently for each use.
+
+When type is specified, the compiler will throw an exception if any conflict is found.
+For example, `U8(256)` is invalid.
+
+### `None` is No Value
 
 To represent no value we use `None`.
 
-`None` is used to conceptually differentiate from the common concepts of `Null` and `Nil` used by other languages.
+`None` is used to differentiate from the common concepts of `Null` and `Nil` used by other languages.
 
 `None` is different in that:
 * It's both a global and immutable
 * Both its value and type are `None`
-* It is not castable to other types.
-  Since `None` isn't castable it must be manually handled instead of being implicitly cast (often using a `Or` types and its variants).
+* It is not castable to other types
+* Since `None` isn't castable it must be manually handled instead of being implicitly cast (often using a `Or` types and its variants)
 
 ### Quoting
 
@@ -348,7 +409,7 @@ The aspects of the car are its ***attributes***, ***metadata***, and ***parts***
 Examples of its fields of each aspect are `weight`, `make`, and `wheel` respectively.
 
 Modeling in this way is common so Tozen formalizes a mechanism to do so succiciently.
-This formalizism captures the *relationship* between a *object* and *descriptors* of that *object*.
+This formalizism captures the *relationship* between a *object* and the *descriptors* of that *object*.
 Since we are capturing a type of relationship, we coin a new term `Relator`.
 A new term also helps conceptually differentiate it from other tools in other languages as it functions slightly differently.
 
@@ -491,9 +552,10 @@ my-rec = (a = 1, b = 2, c = 3)
 
 Since both the value and relators merge this results to any of the following:
 ```
-// as a Record
+// as a inline record
 my-rec = (a = 1, b = 2, c = 3, d = 4, e = 5)
 
+// as a multiline record
 my-rec =
   a = 1
   b = 2
@@ -501,7 +563,7 @@ my-rec =
   d = 4
   e = 5
 
-// as a Relator
+// as a relator
 my-rec
   /
     a = 1
@@ -516,12 +578,12 @@ The value and the relator both refer to the same record.
 If a developer wants then to not merge they simply have to change their model so they belong to different names.
 Continuing the same example we can keep them distinct by:
 ```
-// as a Record
+// as a record
 my-rec =
   value    = (a = 1, b = 2, c = 3)
   children = (d = 4, e = 5)
 
-// as a Relator
+// as a relator
 my-rec
   /
     value
@@ -615,7 +677,7 @@ rec-2 = (a = 1, b = 2, \
 ```
 
 
-## Comments and Document String
+## Comments and Document Strings
 ------------------------------------------------------------------------------------------------------------
 
 Comments are for providing freeform information to developers.
@@ -676,7 +738,7 @@ x = a = 1   // Invalid b/c due to precedence reads as `(x = a) = 1`
 x = (a = 1) // Valid b/c precedence is explicit again
 ```
 
-### `None` is `None`
+### `None` is only `None`
 
 It's invalid to use `None` for both name and value.
 
@@ -755,7 +817,7 @@ Instead of an unfortunate developer discovering a quirk of the syntax in the mid
 
 As the syntax grows more complex there will be more quirks which will be make explicit at the end of each document.
 
-### Assignment Names are Distinct
+### Nested Names are Distinct
 
 Idenfiers which are nested don't refer to the same name.
 
@@ -915,7 +977,7 @@ My choice is nearly the same in that:
 * names are optional
 * `Records` naturally degenerate into `List`-like structures
 
-Although allowing optional names provides some utility:
+We went with a `Record`-like syntax b/c allowing optional names provides some utility:
 * A more natural syntax for assigment and destructure operations
 * Easier to merge assignment and attribute description syntax 
 * Names can be added for zero computation cost and a minimal amount of added complexity
@@ -990,4 +1052,4 @@ The precedence table so far is relatively simple (high to low):
 * Infix Assign
   * eg `x = 1 2 3`
 * Comma Delimiter
-  * eg `x = 1, 2, 3`
+  * eg `x = 1, 2, z = 3`
