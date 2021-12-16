@@ -660,7 +660,7 @@ whspace-str-5 = \\\ """
 ```
 
 Generally line continuations should be used for values and not in the structure of a record.
-Although all of these equivalent `rec-2` is less readable:
+Although all of these are equivalent, `rec-2` is less readable:
 ```
 rec-0 =
   a = 1
