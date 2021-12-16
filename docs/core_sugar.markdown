@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Core Sugar
-description: Sugar for [Tozen Core](./core)
+description: Developer sugar for [Tozen Core](./core)
 permalink: core-sugar
 ---
 
@@ -95,7 +95,7 @@ rec-1 = (1 2, 3; 4 | 5)  <desugars to>  rec-1 = ((((1, 2), 3), 4), 5)
 rec-2 = (1 | 2; 3, 4 5)  <desugars to>  rec-2 = (1, (2, (3, (4, 5))))
 ```
 
-### Example - Table
+### Example - Staff Table
 
 It's rare to mix many delimiters except in cases where you're building complex structures.
 
@@ -477,7 +477,7 @@ x.y:z .(a = 1, 2, b = 3) :(c = 4, 5) /(6, 7) = 0
 ```
 Notice that:
 * the name is always at the start of the line (the leading name)
-* the leading name is what is being defined
+* the leading name (and it's subtree) is what is being defined
 * each relator is delimited by spaces
 * each relator uses parentheses
 * the contents of each relator is a record
@@ -680,6 +680,145 @@ html/body/header.style.css.
 We can use paths to collapse the heirarchy from above to what we really are concerned about.
 
 
+## Compound Literals
+------------------------------------------------------------------------------------------------------------
+
+There are a few compound literals in addition to records and relators.
+
+They are an abstraction completely erased by the compiler.
+This means a developer is free to use them w/o worry about the costs.
+The only concern should be using what best models the data as clearly as possible.
+
+They model the two most common patterns:
+* Array-like using `[]`
+  * requires homogeneous value types
+  * names are optional and statically refer to a specific index
+    * additionally, each name must be unique
+  * useful when:
+    * know the values will be the same
+    * as the constructor of later list-like types
+  * eg
+    ```
+    // Simple
+    arr-0 = [0, 1, 2] <desugars-to> arr-0:Arr(Int, 3) = (0, 1, 2)
+
+    // Optional names
+    arr-1 = [x = 0, 1, y = 2] <desugars-to> arr-1:Arr(Int, 3) = (x = 1, 1, y = 2)
+    ```
+* Map-like using `{}`
+  * heterogeneous value types allowed
+  * names are mandatory and statically refer to a specific value
+    * additionally, each name must be unique
+  * useful when:
+    * values can be different
+    * creating a dictionary-like structure to minimize syntactical noise
+    * as the constructor of later Map-like types
+  * eg
+    ```
+    // Same value types
+    map-0 = {x = 0, y = 1, z = 2} <desugars-to> map-0:Map(Int, 3) = (x = 0, y = 1, z = 2)
+
+    // Different value types
+    map-1 = {x = 0, y = 'a', z = True} <desugars-to> map-1:Map((Int, String, Bool), 3) = (x = 0, y = 'a', z = True)
+    ```
+
+This works b/c the compiler knows everything about the compound literals.
+Since it knows everything, it's able to completely eliminate it.
+Effectively they reduce to record syntax with inferred type information.
+
+At this level the primary utility of these compound literals are to:
+* add syntactical and type constraints
+* in some cases, reduce syntactical noise
+Later levels will have different guarantees and costs but we're not there yet.
+
+### Compose with Relators
+
+Compound literal syntax can also be combined with relators.
+
+They work just like records but add additional guarantees that `[` and `{` provide.
+
+For Array-like:
+```
+x = 0
+  .[a = 1, 2, c = 3, 4, 5]
+  :[d = 6, 7, e = 8]
+```
+
+For Map-like:
+```
+x = 0
+  .{a = 1, b = 2, c = 3, d = 4, e = 5}
+  :{f = 6, g = 7, h = 8}
+```
+
+Can mix all together and constraints only apply to contents:
+```
+x = 0
+  .{a = 1, b = 2, c = 3, d = 4, e = 5} // Conforms to {}
+  :[f = 6, 7, g = 8]                   // Conforms to []
+  /(9, h = 10)                         // Conforms to ()
+```
+
+### Map-Like Simplification
+
+Revisiting an old example, we can now simplify it further.
+
+Our previous staff table had extra visual noise because we had to add many `'VerbatimString'` characters:
+```
+staff =
+  'name'      | 'title'                | 'age' | 'scheduled courses'
+  'Billy Bob' | 'Teacher Assistant'    | 27    | 'Building B', 'Room 16A'; 'Building A', 'Room 8C'
+  'Jill Jack' | 'Professor of History' | 38    | 'Building A', 'Room 3C'
+  'Mary May'  | 'Director'             | 62    | 'Building A', 'Room 46E'; 'Building D', 'Room 9F'
+```
+
+`{` extends the inference operator `:` by applying it to the entire block (thus terminates on dedent).
+
+Using `{` we can reduce further:
+```
+staff = {
+  name      | title                | age | scheduled courses
+  Billy Bob | Teacher Assistant    | 27  | Building B, Room 16A; Building A, Room 8C
+  Jill Jack | Professor of History | 38  | Building A, Room 3C
+  Mary May  | Director             | 62  | Building A, Room 46E; Building D, Room 9F
+```
+
+This gets us quite close to an optimal representation of map-like data.
+There's still a small amount of duplication which will be handled when we introduce patterns.
+
+
+## Markup
+------------------------------------------------------------------------------------------------------------
+
+Markup syntax can be helpful is visualizing the general structure of code.
+
+We selectively add markup-like sugar syntax in order to provide clear, visual indicators.
+
+### File Header
+
+It can be helpful to use well-structured metadata and instructions at the start of a file.
+At the top of each file, a header can be added using triple dash (`---`).
+
+There are few rules to keep the syntax clean and consistent:
+* The header starts and ends with a triple dash (`---`) at the start of a column.
+* After the header there must be a `\n`.
+* The body of the header is just Tozen syntax (usually records, relators, and literals).
+
+Consider a demo project with some metadata to describe the file:
+```
+---
+title       : My Demo Project
+keywords    : [ demo, test, experiment, personal
+description = '''
+  My test project meant to demo and test ideas.
+  It is meant for experiments.
+---
+```
+
+The names used are keywords for the file header and can be used to generate better documentation.
+In later layers, they will also be used to customize functionality and interpretation of the file.
+
+
 ## Examples
 ------------------------------------------------------------------------------------------------------------
 
@@ -826,6 +965,9 @@ _         // Alias for `None`
 \n        // Newline Delimiter
 :         // Data Inference Infix Operator
 -, *      // At start-of-line indicate anonymous item
+[]        // Array-like Literal
+{}        // Object-like Literal
+---       // File header marker
 ```
 
 ### Precedence
