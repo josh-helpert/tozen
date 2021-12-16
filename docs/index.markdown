@@ -3,34 +3,42 @@ layout: default
 ---
 
 Tozen's goal is to be a full-stack, meta-programmable, and optimal language.
-A language that can be used from systems programming to front-end styling.
+A language that can be used from front-end to systems programming.
 
 It achieves this trick by combining a few techniques:
 * stratification
-  * chose minimal amount of features in order for compiler providing more guarantees
+  * the language is broken into different levels
+  * each level grows in functionality while reducing compiler guarantees
 * data-oriented syntax
   * is it easier to create external tools, analysis, and synthesis
   * similar to how S-expressions are easy to reason on
-* zero-cost abstractions
+* zero-cost abstractions with metaprogramming
   * comptime, MSP (both? others? fexpr?)
-* contexts, dialecting, and reinterpreting syntax
-  * 
 * others?
+  * contexts, dialecting, and reinterpreting syntax
+    * 
   * rulesets
     * some provable and some not
 
-Each level is broken into two parts:
-* the IR level which is a minimial, consistent language useful for analysis and generation by programs
-* the sugar level which is a ergonomic, productive, and terse language useful for developers
+Each stratified level is broken into two parts:
+* IR
+  * a minimal, consistent, and precise language
+  * useful for analysis and generation by other programs
+  * only uses lower levels of IR to keep simple
+* sugar
+  * ergonomic, productive, and terse language
+  * useful for developers
+  * uses lower levels of sugar
+  * translates to IR
 
 As levels grow in complexity they lose compiler guarantees.
 It is often best to use the simplest level possible.
 This allows the compiler to do more optimizations and verification on your behalf.
 
-The levels are:
-* Level 0 - Core
+Tozen is divided by level and part:
+* Level 0 - Core [IR](./core) [Sugar](./core_sugar)
   * description
-    * 
+    * essentials of Tozen syntax which is necessary for every implementation
   * features:
     * literals
     * records
@@ -67,9 +75,12 @@ The levels are:
   * features:
     * 
   * potentially:
+    * execution?
     * deterministic (time, memory, execution)
     * constrained/finite dependent types
     * turing-incompleteness
+    * operators
+    * 
   * comparable to:
     * 
 * Level 3 - Comptime Only (no runtime cost, memory, or execution)
@@ -90,10 +101,3 @@ The levels are:
     * 
   * comparable to:
     * 
-
-Tozen documentation is broken into a few parts.
-
-## Syntax
-[Base IR](./base) The essentials of Tozen syntax which is necessary for every implementation. Is meant for program synthesis not developers.
-
-[Base Sugar](./base_sugar) Ergonomic version of [Base IR](./base) meant for developers and not program synthesis.
