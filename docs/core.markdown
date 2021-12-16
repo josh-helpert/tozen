@@ -764,12 +764,12 @@ At this level, this means `Integral Literals` can't be used for names:
 o =
   5 = 1
   9 = 2
-  6 = 2
+  6 = 3
 ```
 
 On top of looking ackward, this will conflict with higher levels of the syntax.
 
-### Mixing `None` with Relators
+### Mixing `None` value with Relators
 
 It is invalid to mix `None` with Relators.
 
@@ -795,7 +795,7 @@ This is read as:
 * Get result of `x = 0` expression
 * Assign result to `1`
 
-Elder doesn't allow this syntax and will emit a syntax error.
+Tozen doesn't allow this syntax and will emit a syntax error.
 
 The reasoning is that code like this will lead to more bugs than useful use-cases.
 
@@ -939,9 +939,9 @@ Hopefully this is a balance which acceptably ameliorates the conflicting issues 
 
 Upper-Case identifiers indicate they are processed different than other identifiers.
 
-At this syntax level, they are used to indicate special values (like `None` and `True`).
+At this syntax level, they are used to indicate special values like `None`, `True`, `Int`.
 
-At higher levels these will expand to include other concepts like `Type` and `Keyword`.
+At higher levels these will expand to include other concepts like user-defined types and keywords.
 
 ### Why precedence of `=` less than `,`
 
@@ -962,7 +962,10 @@ Ultimately it was chosen b/c:
   ```
 * Assigning multiple values becomes more clear as multiple values must be within parentheses
   ```
+  // These are visually consistent, zero-cost containers
   x = (1, 2, 3)
+  x = [1, 2, 3]
+  x = {1, 2, 3}
   ```
 * Values are more important than names.
   The priority should be to focus on values.
