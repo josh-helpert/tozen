@@ -16,9 +16,9 @@ It achieves this trick by combining a few techniques:
   * comptime, MSP (both? others? fexpr?)
 * others?
   * contexts, dialecting, and reinterpreting syntax
-    * 
   * rulesets
     * some provable and some not
+  * integration with multiple targets
 
 Each stratified level is broken into two parts:
 * IR
