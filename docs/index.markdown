@@ -36,7 +36,7 @@ It is often best to use the simplest level possible.
 This allows the compiler to do more optimizations and verification on your behalf.
 
 Tozen is divided by level and part:
-* Level 0 - Core [IR](./core) [Sugar](./core_sugar)
+* Level 0 - Core [IR](./core) [Sugar](./core-sugar)
   * description
     * essentials of Tozen syntax which is necessary for every implementation
   * features:
@@ -51,7 +51,7 @@ Tozen is divided by level and part:
     * serialization and data-modeling
       * literals like JSON, YAML, SDLang, OGDL
       * value-only syntaxes like StrictYAML
-* Level 1 - Compiler Erased
+* Level 1 - Static Analyzable [IR](./static) and [Sugar](./static-sugar)
   * description
     * 
   * features:
@@ -66,24 +66,15 @@ Tozen is divided by level and part:
     * refinement types
     * constrainted/finite dependent types
     * total functions
-  * comparable to:
-    * schema like InternetObject, OGDL
-    * custom DSL like Pug, SASS, Markdown
-* Level 2 - Finite
-  * description
-    * 
-  * features:
-    * 
-  * potentially:
     * execution?
     * deterministic (time, memory, execution)
     * constrained/finite dependent types
     * turing-incompleteness
     * operators
-    * 
   * comparable to:
-    * 
-* Level 3 - Comptime Only (no runtime cost, memory, or execution)
+    * schema like InternetObject, OGDL
+    * custom DSL like Pug, SASS, Markdown
+* Level 3 - Full General Purpose [IR](./full) and [Sugar](./full-sugar)
   * description
     * 
   * features:
@@ -92,12 +83,12 @@ Tozen is divided by level and part:
     * 
   * comparable to:
     * 
-* Level 4 - General Purpose
+* Level 4 - Metaprogramming [IR](./meta) and [Sugar](./meta-sugar)
   * description
     * 
   * features:
     * 
   * potentially:
-    * 
+    * Comptime Only (no runtime cost, memory, or execution)
   * comparable to:
     * 
