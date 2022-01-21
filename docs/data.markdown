@@ -1,8 +1,8 @@
 ---
 layout: default
-title: Core IR
-description: Core layer of Tozen
-permalink: core
+title: Data Level
+description: 
+permalink: data
 ---
 
 The lowest level of the Tozen language is primarily useful for data modeling, data representation, and serialization.
@@ -15,47 +15,6 @@ It is also rare that a developer will use it directly as the higher level syntax
 
 ## Basic Types and Literals
 ------------------------------------------------------------------------------------------------------------
-
-Tozen reserves some common types to assure they have a universal meaning.
-
-This doesn't mean they have the same cost or representation on each build target.
-For example, `I8` is implemented differently in `JavaScript` compared to the `JVM`.
-When types are available on a target, they are guaranteed to function the same even if have different costs.
-
-### Basic Types
-
-Basic types are directly represented by the environment they run on.
-Higher level types are often built using these.
-Often the target is LLVM but can also target many others like JavaScript, Java, the HTML DOM, etc.
-
-* Numeric
-  * Integral
-    * `Int` is the target environment default signed, integer (32 or 64 bit)
-    * `UInt` is the target environment default unsigned, integer (32 or 64 bit)
-    * `Nat` are positive `Int` (not including zero)
-    * `Whole` are positive `Int` (including zero)
-    * `I8, I16, I32, I64, I128` are sized, signed integers
-    * `U8, U16, U32, U64, U128` are sized, unsigned integers
-  * Floating Point (IEEE 754)
-    * `Float` is the target environment default floating point (32 or 64 bit)
-    * `F8, F16, F32, F64` are sized, signed floating point
-  * Decimal or Fixed Point
-    * Exact decimal until overflow
-    * `Fixed` is the target environment default fixed point (32 or 64 bit)
-    * `Fx8, Fx16, Fx32, Fx64` are sized, signed fixed point
-    * `UFx8, UFx16, UFx32, UFx64` are sized, unsigned fixed point
-  * Fraction
-    * Exact fraction until overflow
-    * `Frac` is the target environment default fraction (32 or 64 bit)
-    * `Frac8, Frac16, Frac32, Frac64` are sized, signed fixed point
-    * `UFrac8, UFrac16, UFrac32, UFrac64` are sized, unsigned fixed point
-* String
-  * `Verbatim` is for exact Strings
-  * `StringLiteral` is for escapable Strings
-* `Bool`
-  * Only possible values are `True` and `False` literal
-* `None`
-  * Only possible value is `None` literal
 
 ### Literals
 

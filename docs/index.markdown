@@ -36,7 +36,7 @@ It is often best to use the simplest level possible.
 This allows the compiler to do more optimizations and verification on your behalf.
 
 Tozen is divided by level and part:
-* Level 0 - Core [IR](./core) [Sugar](./core-sugar)
+* Level 0 - Data [IR](./data) [Sugar](./data-sugar)
   * description
     * essentials of Tozen syntax which is necessary for every implementation
   * features:

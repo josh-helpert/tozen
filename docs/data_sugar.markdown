@@ -1,14 +1,14 @@
 ---
 layout: default
 title: Core Sugar
-description: Developer sugar for [Tozen Core](./core)
-permalink: core-sugar
+description: Developer sugar for [Tozen Data](./data)
+permalink: data-sugar
 ---
 
-[Tozen Core](./core) is used by programs and not meant for developers to use directly.
+[Tozen Data](./data) is used by programs and not meant for developers to use directly.
 
-To make it more usable we add sugar which will emit [Tozen Core](./core).
-This makes the syntax more ergonomic for developers while allowing the [Tozen Core](./core) to stay minimal and consistent.
+To make it more usable we add sugar which will emit [Tozen Data](./data).
+This makes the syntax more ergonomic for developers while allowing the [Tozen Data](./data) to stay minimal and consistent.
 
 
 ## Alias for `None` using `_`
@@ -692,34 +692,36 @@ The only concern should be using what best models the data as clearly as possibl
 They model the two most common patterns:
 * Array-like using `[]`
   * requires homogeneous value types
-  * names are optional and statically refer to a specific index
-    * additionally, each name must be unique
+  * names are optional
+    * each name statically refers to a specific array slot
+    * each name must be unique
   * useful when:
     * know the values will be the same
     * as the constructor of later list-like types
   * eg
     ```
     // Simple
-    arr-0 = [0, 1, 2] <desugars-to> arr-0:Arr(Int, 3) = (0, 1, 2)
+    arr-0 = [0, 1, 2] <desugars-to> arr-0 :Arr(Int, 3) = (0, 1, 2)
 
     // Optional names
-    arr-1 = [x = 0, 1, y = 2] <desugars-to> arr-1:Arr(Int, 3) = (x = 1, 1, y = 2)
+    arr-1 = [x = 0, 1, y = 2] <desugars-to> arr-1 :Arr(Int, 3) = (x = 1, 1, y = 2)
     ```
-* Map-like using `{}`
+* Struct-like using `{}`
   * heterogeneous value types allowed
-  * names are mandatory and statically refer to a specific value
-    * additionally, each name must be unique
+  * names are mandatory
+    * name statically refer to a specific struct value
+    * each name must be unique
   * useful when:
     * values can be different
     * creating a dictionary-like structure to minimize syntactical noise
-    * as the constructor of later Map-like types
+    * as the constructor of later Struct-like types
   * eg
     ```
     // Same value types
-    map-0 = {x = 0, y = 1, z = 2} <desugars-to> map-0:Map(Int, 3) = (x = 0, y = 1, z = 2)
+    struct-0 = {x = 0, y = 1, z = 2} <desugars-to> struct-0 :Struct(Int, 3) = (x = 0, y = 1, z = 2)
 
     // Different value types
-    map-1 = {x = 0, y = 'a', z = True} <desugars-to> map-1:Map((Int, String, Bool), 3) = (x = 0, y = 'a', z = True)
+    struct-1 = {x = 0, y = 'a', z = True} <desugars-to> struct-1 :Struct((Int, String, Bool), 3) = (x = 0, y = 'a', z = True)
     ```
 
 This works b/c the compiler knows everything about the compound literals.
@@ -744,7 +746,7 @@ x = 0
   :[d = 6, 7, e = 8]
 ```
 
-For Map-like:
+For Struct-like:
 ```
 x = 0
   .{a = 1, b = 2, c = 3, d = 4, e = 5}
@@ -759,7 +761,7 @@ x = 0
   /(9, h = 10)                         // Conforms to ()
 ```
 
-### Map-Like Simplification
+### Struct-Like Simplification
 
 Revisiting an old example, we can now simplify it further.
 
@@ -900,7 +902,7 @@ There's more to do in order to remove repetition in the shape and structure of t
 
 Later on it can be simplified further as we introduce new concepts.
 
-## HTML 
+### HTML 
 
 We can model some simple declarative languages as well.
 
@@ -966,7 +968,7 @@ _         // Alias for `None`
 :         // Data Inference Infix Operator
 -, *      // At start-of-line indicate anonymous item
 []        // Array-like Literal
-{}        // Object-like Literal
+{}        // Struct-like Literal
 ---       // File header marker
 ```
 

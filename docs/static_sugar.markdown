@@ -12,58 +12,7 @@ It emits [Static IR](./static).
 ## 
 ------------------------------------------------------------------------------------------------------------
 
-## Select
-------------------------------------------------------------------------------------------------------------
 
-Select syntax is the simplest and most direct method of picking one-to-many names within a structure.
-
-There are a few simple methods of selecting names:
-* by name
-  * when names are present, they can be used to traverse data via a path
-  * this works similar to maps in other languages
-* by comptime index
-  * represents the syntax as initially defined in code
-  * the index of the value in the record
-  * index starts at 0
-* by data index
-  * just like comptime index but data indexes represent the current data
-  * in later levels, data may change which means the same select may refer to different values
-  * for this level, data and comptime indexes are the same
-
-Consider a structure with multiple relators:
-```
-o
-  .a = 0
-  .b
-    :x = 1
-    :y = 2
-  .c = 3
-    :z = 4
-```
-
-There are multiple ways to select `x`:
-```
-o.b:x   // by name
-o.#1:#0 // by comptime index
-o.1:0   // by data index
-o.b:0   // by mixing them together
-```
-
-Similarly, there are multiple ways to select `x` and `y`:
-```
-o.b:(x, y)    // by name
-o.#1:(#0, #1) // by comptime index
-o.1:(0, 1)    // by data index
-o.b:(0, #1)   // by mixing them together
-```
-
-### Leaves vs Branches
-
-### Multiple Names
-
-### Wildcard
-
-### Enumerable
 
 ## Types
 ------------------------------------------------------------------------------------------------------------
