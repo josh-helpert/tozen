@@ -1,5 +1,40 @@
 
 TODO:
+* constant-time structure
+  * more about what comptime can emit and analyze? then emit optimized version(s)?
+* default execution environments
+  * environments
+    * data
+    * exec (runtime or comptime)
+    * other require keywords
+      * 
+  * mixing using keywords
+    * do/#do in data
+    * #data in exec
+* Boolean ternary or optional?
+  * True, False, Unknown
+  * Result(Bool)
+    * allows to include an error of not
+* when is overloading grokable?
+  * don't want:
+    * a overload to have a non-expected implementation
+    * looking overload after overload to understand what is being done
+    * not all guarantees provided like:
+      * + w/ commutative doesn't work w/ String?
+        * or maybe this isn't a universal guarantee?
+  * want:
+    * avoid arbitrary additional syntax even when same semantic meaning
+      * eg sum always means some type of monoid-al
+    * 
+  * scratch
+    * the overloaded operators/functions need to follow the same semantic meaning
+      * the downside is implementation details can be slightly different
+        * the details may be meaningful to the context which calls them
+        * for example, commutativity of `+` is important in some cases and not others
+        * we can capture these guarantees and then match against the varieties of guarantees that implementations care about
+          * not just guarantees but also just details, properties, qualities one would care about
+            * then only the concerning cases which check the conditions which matter to them?
+              * these captured as `:` metadata relator?
 * More freedoms when more is known and still can be zero runtime
   * comptime known
   * local
@@ -7,6 +42,8 @@ TODO:
   * mutate locally
     * not to callers
     * not to internal blocks? must be visible?
+    * not until usable by any other code
+      * sealed at first use in nested block?
 * Variables
   * naming convention
   * modifiers
@@ -456,3 +493,199 @@ Tree  = Enum
     Empty
     Color, #a Tree, #a, #a Tree
 ```
+
+```
+// Types of spec:
+// - implicit arg? (a la Idris)
+// - capture (a la Idris)
+// - explicit arg (a la Zig)
+// - hole (a la Idris)
+// - expression (do, #do)
+//   - result is signature
+//   - this is effectively codegen?
+Tree = Enum
+  Leaf
+  Node = #do
+    a :Type
+
+    (Tree a, Tree a)
+```
+
+### Enum/(Generics/Polymorphism)
+
+```
+// OCaml
+type 'a tree =
+    | Leaf
+    | Node of 'a tree * 'a * 'a tree;;
+
+let t = Node (Node (Leaf, 1, Leaf), 2, Node (Node (Leaf, 3, Leaf), 4, Leaf));;
+
+// Tozen
+Tree = #do
+  T :TypeCapture
+
+  Enum
+    Leaf = _
+    Node = (Tree(T), T, Tree(T))
+
+t = Node(Node(Leaf, 1, Leaf), 2, Node(Node(Leaf, 3, Leaf), 4, Leaf)) // all ()
+t = Node Node(Leaf, 1, Leaf), 2, Node Node(Leaf, 3, Leaf), 4, Leaf   // drop outermost ()
+t = Node Node Leaf, 1, Leaf; 2, Node Node Leaf, 3, Leaf; 4, Leaf     // drop all ()
+```
+
+### Enum/Memory
+
+For the targets which manage memory, the layout of `Enum`s don't match the order of fields.
+
+Instead the compiler attempts to create an optimal layout.
+
+For those languages where memory layout needs to be explicit the developer can use modifiers like:
+```
+StopLight #(packed = False, = Enum
+  Green  = 0
+  Yellow = 1
+  Red    = 2
+```
+
+### GADT
+
+```
+// Haskell
+data Expr a where
+    EBool  :: Bool     -> Expr Bool
+    EInt   :: Int      -> Expr Int
+    EEqual :: Expr Int -> Expr Int  -> Expr Bool
+
+eval :: Expr a -> a
+
+eval e = case e of
+    EBool a    -> a
+    EInt a     -> a
+    EEqual a b -> (eval a) == (eval b)
+
+expr1 = EEqual (EInt 2) (EInt 3)        -- the type of ex
+
+// TODO: Tozen
+```
+
+## Core Stuctures
+------------------------------------------------------------------------------------------------------------
+
+OCaml
+```
+primitives: int, float, string, bool
+
+// List
+// - ordered, homogeneous
+// - arbitrary size 
+[[1; 2]; [3; 4]; [5; 6]];; // int list list
+
+// Tuple
+// - ordered, heterogeneous
+// - sized
+(true, 0.0, 0.45, 0.73, "french blue");; // bool * float * float * float * string
+
+// Record
+// - like labeled tuples
+// - must contain all fields on instantiation
+type colour = {
+  websafe : bool;
+  r : float;
+  g : float;
+  b : float;
+  name : string;
+};;
+
+let b = {
+  websafe = true;
+  r = 0.0;
+  g = 0.45;
+  b = 0.73;
+  name = "french blue"
+};;
+
+// Mutable Records
+type person = {
+  first_name  : string;
+  surname     : string;
+  mutable age : int
+};;
+
+let birthday p = p.age <- p.age + 1;;
+
+// Mutable fixed-length array
+let arr = [|1; 2; 3|];; // int array
+arr.(0);;               // int = 1
+arr.(0) <- 0;;          // unit = ()
+arr;;                   // int array = [|0; 2; 3|]
+
+// Custom Type
+// - constructors w/ data
+// - can be recursively defined
+type colour =
+    | Red
+    | Green
+    | Blue
+    | Yellow
+    | RGB of float * float * float
+    | Mix of float * colour * colour;;
+
+Mix (0.5, Red, Mix (0.5, Blue, Green));;
+
+// Trees
+type 'a tree =
+    | Leaf
+    | Node of 'a tree * 'a * 'a tree;;
+
+let t = Node (Node (Leaf, 1, Leaf), 2, Node (Node (Leaf, 3, Leaf), 4, Leaf));;
+
+// Expression
+type expr =
+    | Plus   of expr * expr  (* a + b *)
+    | Minus  of expr * expr  (* a - b *)
+    | Times  of expr * expr  (* a * b *)
+    | Divide of expr * expr  (* a / b *)
+    | Var    of string       (* "x", "y", etc. *);;
+
+// n * (x + y)
+Times (Var "n", Plus (Var "x", Var "y"));;
+
+// 
+
+```
+
+## Union
+------------------------------------------------------------------------------------------------------------
+
+Q:
+* Should a ADT (or GADT) replace both Enum and Union?
+* There an efficiency case for Union? or just for c compatibility?
+* All similar ideas:
+  * Keyword
+    * Names w/o values
+  * Enum
+    * Names potentially w/o values
+      * needs to have an integer value?
+    * or like a Range w/o names?
+    * enums are also used for things like bit flags but we may be able to use other constructs?
+  * ADT
+    * Name w/ diff fields over a union
+  * Tagged Union
+    * Name w/ diff fields over a union
+  * Range
+    * ranges are over values but not over names?
+  * Static Records
+* Zig basics
+  * Primitives
+  * Constructs
+    * Array
+    * Vector
+    * Pointer
+    * Slice
+    * Struct
+    * Enum
+    * Union
+    * Optional
+    * Error & ErrorSet
+  * Behavior
