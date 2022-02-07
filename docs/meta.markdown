@@ -8,9 +8,8 @@ permalink: meta
 This level adds features which supports metaprogramming.
 This is the highest level which is the basis of all abstractions.
 
-Metaprogramming is...TODO...
-* elems
-* diff types
+Metaprogramming is code which emits other code.
+It allows us to ...TODO...
 
 It is built on top of [General Purpose Level](./full) and is the only dependency.
 It can emit any of the previous levels IR.
@@ -31,6 +30,31 @@ A developer should be familiar with metaprogramming as it functions very similar
 ## Compile Time
 ------------------------------------------------------------------------------------------------------------
 
+### Comptime Known Reinterpretation
+
+Literals that are comptime known can be shared and used in multiple variables.
+
+Since the compiler knows the value and the variable type it is able to reason about them both.
+It is able to assure correctness.
+
+A simple example:
+```
+// each are comptime known
+#x = 1
+#y = -1
+#z = 1.5
+
+// These are valid
+b :Int   = #x // interpret as Int
+c :Float = #x // interpret as Float which widens
+d :Int   = #y // interpret as Int
+e :Float = #y // interpret as Float which widens
+f :Float = #z // interpret as Float which widens
+
+// These are illegal
+g :U8  = #y // Negative numbers are not in range of U8
+h :Int = #z // Cannot implicitly lose information, must be explict and cast Int(#z)
+```
 
 ## Codegen
 ------------------------------------------------------------------------------------------------------------

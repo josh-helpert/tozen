@@ -52,7 +52,17 @@ TODO:
     * eg `x :VerbatimString = "a b c"` error?
     * eg `x :StringLiteral = 'a b c'` error?
   * lifetime
+    * diff aspects:
+      * program
+        * phase
+      * stack
+        * function
+        * block
+      * declaration
+      * heap
+    * phase
     * file
+    * module
     * block
     * context
     * function
@@ -64,7 +74,6 @@ TODO:
   * comptime known
     * and how it propogates
   * narrowing
-  * 
 * Operators
   * only for sugar? the language only uses methods but not operators or infix outside of assignment/bind?
     * functions make more sense? and consistent?
@@ -689,3 +698,159 @@ Q:
     * Optional
     * Error & ErrorSet
   * Behavior
+
+## Zero Cost Abstractions
+------------------------------------------------------------------------------------------------------------
+
+Notes:
+* substitution
+* constant-time
+* resource
+  * thread
+  * open/close file
+* diff aspects
+  * data
+  * execution
+    * phase/lifetime
+    * branch
+    * stack
+  * task
+    * unit of work
+    * tick/cycle
+  * comptime/code
+  * dependencies
+  * location
+    * global
+    * module
+    * fn
+      * call context
+      * defn context
+    * block
+* cost and resolution model
+  * used to make costs clear and diff ways to resolve these costs
+  * dev must make explicit
+* stack generators
+  * yield
+  * decide start/end point in stack
+    * or impliciit end when unwind
+  * implicit stack variable state but isolated to generator itself (in some relator like meta, child, field)
+    * stack variables hold state
+    * each call is actually just passing stack variables to hidden function
+      * very similar to nested functions?
+* tagged functions
+  * `path = raw"~/dev/{username}/test"` pass to function `raw`?
+* Tuple as reification of Record as data and fully static?
+* optimize static structures?
+  * delay building/finalizing?
+    * much like hole?
+  * declare multiple and combine
+    * compiler will merge into 1 allocation for you?
+  * concat, spread, merge, etc.
+    * related to varargs and rest operators as well!
+* `~` for truthy coersion?
+  * or better explicit coersion?
+* spread and rest
+  ```
+  spread: [items..., item]
+  rest: (...arguments) -> print arguments
+  ```
+* div for integer division (floored division)
+  mod for modulo (floored division, same sign as divisor)
+  rem for remainder (truncated division, same sign as dividend)
+  pow for exponentiation
+* Kesh
+  * extension/interpretation: https://github.com/kesh-lang/kesh/wiki/Documentation#extensions
+  * loops: https://github.com/kesh-lang/kesh/wiki/Extensions#imperative-loops
+  * contract: https://github.com/kesh-lang/kesh/wiki/Extensions#contracts
+  * defer: https://github.com/kesh-lang/kesh/wiki/Extensions#defer
+* diff types of knowables
+  * regions
+    * stack
+    * program phase
+    * init/teardown
+      * eg resource, thread
+    * 
+* want both functions and methods
+  * functions for a general purpose execution which is general purpose
+  * methods for code which is highly focused on this data it's defined in and very well scoped to it
+    * it makes logical and data sense to operate it locally?
+* add contracts which means something must be used?
+  * eg the implementing function must call this other function, only once, etc.
+* monomorphism
+  * eg in Rust
+    ```
+    trait Speak {
+        fn speak(&self);
+    }
+
+    struct Cat;
+
+    impl Speak for Cat {
+        fn speak(&self) {
+            println!("Meow!");
+        }
+    }
+
+    fn talk<T: Speak>(pet: T) {
+        pet.speak();
+    }
+
+    fn main() {
+        let pet = Cat;
+        talk(pet);
+    }
+    ```
+
+    in Tozen:
+    ```
+    Speak = Trait
+      speak = Fn (&self)
+
+    Cat = Struct
+
+    Cat #implements Speak
+    implements(Speak, Cat)
+    implements(Speak, Cat) ->
+      speak = Fn (&self) ->
+        println!("Meow!")
+
+    talk = Fn (pet :Speak) ->
+      pet.speak()
+
+    talk = #do
+      T :Speak
+      T :(can Speak)
+      T :(is-a Speak)
+      T #can Speak
+
+      Fn (pet :T)
+        pet.speak()
+
+    main = Fn () ->
+      pet = Cat
+      talk(pet)
+    ```
+* can't require file header b/c of interpreter directives?
+  * then really is the first set of dashes?
+* implicit casts/peer type resolution
+  * widening: I8 + I16 => I16
+  * resolve const and non-const to const
+  * and many others?
+* global increments and categories of increments
+  * diff units of counts
+    * entire program/in-memory
+    * phases
+    * modules
+* 
+
+## Fixed Memory Cast
+------------------------------------------------------------------------------------------------------------
+
+Notes:
+* Same memory start and end
+* The same memory can be rewritten to new interpretation as long as there's space (statically known)
+* Like Zig union which can pick the active interpretation?
+* Also can reinterpret to another as long as memory aligns
+  * could evn require a copy for memory which isn't compliant?
+* In cases where it can't, fails at comptime?
+  * A runtime version as well which can be Result and potentially fail?

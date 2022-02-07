@@ -799,7 +799,7 @@ We selectively add markup-like sugar syntax in order to provide clear, visual in
 ### File Header
 
 It can be helpful to use well-structured metadata and instructions at the start of a file.
-At the top of each file, a header can be added using triple dash (`---`).
+A header can be added using triple dash (`---`) at the top of the file or after the interpreter directive (eg `#!/usr/bin/env tozen`).
 
 There are few rules to keep the syntax clean and consistent:
 * The header starts and ends with a triple dash (`---`) at the start of a column.

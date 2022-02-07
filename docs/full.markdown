@@ -9,15 +9,38 @@ This level adds features which are needed for a full, turing-complete language.
 
 It is built on top of [Data Level](./data) and is the only dependency.
 
+It's header specification is `(lang = 'Tozen', level = 'execute')`. ???
+
 
 ## Overview
 ------------------------------------------------------------------------------------------------------------
+
+The core of Tozen are a few concepts which work together:
+* data (variables, relators, data-structures)
+* functions
+* metaprogramming
+* hard-coded information (syntax sugar, primitives, known data sets, proofs)
+
+These work in coordination as the basis of coding.
+Often by interpreteting data according to its metaprogramming type.
+
+This level introduces more data and functions with its own hard-codec information.
+However each concept is interlinked and is not able to fully disentangle.
+For example, a `Fn` is actually a metaprogramming abstraction but for practical purposes it can be treated as a general purpose type.
 
 ### By default, no runtime
 
 A developer can't implicitly use abstractions which have a runtime cost.
 This means abstractions which are common in other languages are not the default choice.
 Structures like: closures, generators, resizing arrays, subtype polymorphism, abstract lists, and many more.
+
+This requirement is in place for a few reasons:
+* Tozen is meant for many environments (from drivers to websites).
+  It cannot enforce high-level flexibility at the cost of low-level control.
+* Implicit costs paired with lack of control can result in less predictable code
+* Simpler constructs are easier to optimize
+* Developers can do much of their work using constrained abstractions.
+  I think many will be surprised how few they need when it is not the default.
 
 This doesn't mean developers can't use constructs like these.
 Rather a developer must be explicit in their intent by opting-into using them.
@@ -42,41 +65,18 @@ The necessary basics are:
   * Often upper-case identifiers indicate comptime constructs for a `Type` or `Protocol`
 * comptime known
   * These are variables (and other constructs) which can be understood by the compiler using static analysis.
+  * This is very similar and inspired by Zigs comptime known concept.
+    Although we do metaprogramming differently this aspect is the same.
   * Often these include constructs like:
     * literals: `4e2.5`, `True`, `None`
     * comptime variables: `#x`, `#do`, `#sum`
     * upper-case identifiers: `Fn`, `Type`, `Protocol`
-    * builtins: `do`, 
-    * constants: `Pi`, 
+    * builtins: `do`, `if`, `loop`
+    * constants: `Pi`, `-Inf`, `Inf`
+    * hard-codec concepts: `Natural`, `Whole`, `Imaginary`
 
 This is enough to understand the rest of this guide.
 A thorough overview will be in the next layer for metaprogramming.
-
-### Comptime Known Reinterpretation
-
-Literals that are comptime known can be shared and used in multiple variables.
-
-Since the compiler knows the value and the variable type it is able to reason about them both.
-It is able to assure correctness.
-
-A simple example:
-```
-// each are comptime known
-#x = 1
-#y = -1
-#z = 1.5
-
-// These are valid
-b :Int   = #x // interpret as Int
-c :Float = #x // interpret as Float which widens
-d :Int   = #y // interpret as Int
-e :Float = #y // interpret as Float which widens
-f :Float = #z // interpret as Float which widens
-
-// These are illegal
-g :Int = #z // Cannot implicitly lose information, must be explict and cast Int(#z)
-h :U8  = #y // Negative numbers are not in range of U8
-```
 
 ### Execute using `do` and `#do`
 
@@ -90,11 +90,30 @@ These functions interpret their children as steps to execute as a block.
 Curly braces `{}` are not used for scopes.
 Instead, the `do`-family of functions are used.
 
+`do` block are executable blocks and can be treated like a normal block in many other languages:
+* are not looping
+* reduces need for nested conditionals
+* can be treated as an expression
+* can be broken out of
+  ```
+  do
+    sum = 1 + 2
+
+    if sum == 3
+      break -1
+  
+    sum    
+  ```
+
+`do` blocks are not looping can be broken out of like:
+```
+```
+
 For example, this is how functions treat their `Fn:body` as a executable block.
 
 ### Relators instead of hard-coded syntax
 
-Many languages use hard-coded syntax to define elements of a language.
+Many languages use hard-coded syntax to define every feature of a language.
 Tozen does as well but tries to minimize the need to memorize syntax.
 
 Instead of custom syntax, each abstraction defines relators which are meaningful for that abstraction.
@@ -103,13 +122,13 @@ This has benefits beyond the need to continually define more syntax like:
 * minimizes the need to introduce new syntax as extension can often be handled by new relators
 * the value of each relator are data (just like all the syntax) which developers already know how to read
 * developers intuitively understand data which lowers the ability to reason about new extensions
-* relators map to the AST representation nearly directly. This means metaprogramming and general purpose programming use the same representation.
+* relators map to the AST representation nearly directly.
+  This means metaprogramming and general purpose programming use the same representation.
 
 For example, a function `Fn` defines the relators (and many more):
-* `Fn:in` interpeted as input arguments
-* `Fn:out` interpeted as output values
-* `Fn:body` interpreted as executed function block
-* `Fn:body/return` interpreted as a early return but local to block
+* `Fn:in` is interpeted as input arguments
+* `Fn:out` is interpeted as output values
+* `Fn:body` is interpreted as executed function block
 
 ### Pattern
 
@@ -124,10 +143,32 @@ Notice that patterns only apply to the ergonomic syntax portion of the language.
 The IR portion is explicit, unambigous, and consistent.
 
 
+
 ## Variables
 ------------------------------------------------------------------------------------------------------------
 
 Variables are a name bound to value.
+
+### Syntax
+
+Variables are an interpretation of a record which:
+* interprets record names as variable identifiers
+* interprets record values according to the natural interpretation:
+  * if value is a name, get the value
+    ```
+    x = 1 // Define 'x' as primitive
+    y = x // Get value of 'x'
+    ```
+  * if value is executable, execute it, then get the return value
+    ```
+    add = (x, y) -> x + y // Define lambda
+    sum = add(1, 2)       // Execute 'add' and get return value
+    ```
+  * otherwise treat as value
+    ```
+    x = 1 // Define 'x' as primitive
+    ...TODO: more...
+    ```
 
 ### Scope
 
@@ -146,9 +187,15 @@ do
   // x, y are visible w/n nested block
   do
     z = x + y
+
+log x // 1
+log y // error b/c not in scope
+log z // error b/c not in scope
 ```
 
 ### Levels of mutable
+
+// TODO: Mutable semantics? depend on context?
 
 Mutable variables are flexible yet risky.
 The compiler knows the least about them and thus can provide the fewest guarantees.
@@ -258,14 +305,14 @@ They also have two forms inline and multiline.
 
 Consider a somewhat complex variable declaration which is integral, mutable, thread-local, and atomic:
 ```
-// multiline
+// multiline form
 x = 1
   :type         = Int
   #mutable      = True
   #thread-local = True
   #atomic       = True
 
-// inline
+// inline form
 x :Int#(mut, thread-local, atomic) = 1
 ```
 
@@ -364,15 +411,15 @@ This pattern is repeated in many different language features like:
 Although there are multiple manifestations, Tozen unifies them into a single concept of a `Hole`.
 Conceptually `holes` are:
 * comptime details missing from a program
-* cannot be freely used until reified
+* constructs with holes cannot be used until reified
 * details must be provided before commonly used like other parts of program
 
 ### Syntax
 
 We want the syntax to express a few properties of holes:
 * its a comptime pattern
-* its a detail which needs to be provided before used
-* it must be able to be placed in nearly all locations in code
+* its a missing detail which needs to be provided before used
+* it must be able to be placed in nearly all locations in code (like name, value, relator, ...)
 * must allow for optional names and types (much like function input)
 * terse enough for common use
 
@@ -388,7 +435,7 @@ do
 // Named hole value w/ constrainted type (effectively a generic)
 // - When not specified it default to U8
 do
-  // We're missing a named value 'T'
+  // We're missing a named value 'T' which is a Type
   MyList = List(#?T :Type = U8)
 
   // Supply the missing details for each type of list
@@ -399,6 +446,8 @@ do
 // Parametric polymorphism
 do
   sum = Fn (x :#?Type, y :#?Type) ??? or should be capture? or what?
+  sum = Fn (x :#?CaptureType, y :#?CaptureType) ??? or should be capture? or what?
+  sum = Fn (x :#?Capture(Type), y :#?Capture(Type)) ??? or should be capture? or what?
 ```
 
 // like a comptime fn?
@@ -426,11 +475,44 @@ Notes:
   ???a
   ?(a)
   ?a
+  #(a)?
+  #?(a)
   a = Unknown // This even work b/c must be used all over not just name or value?
   Unknown(a)  // This more flexible b/c can wrap anything
   a#Unknown   // Like a relator which tags that it is Unknown? this can be anything?
   #a?         // Comptime hole?
   ```
+* How to be used for diff types of polymorphism?
+  * polymorphisms:
+    * ad-hoc
+      * function and operator overloading
+      * static dispatch
+      * eg `Add (U8, U8)` and `Add (String, String)`
+    * parametric
+      * generic function and generic programming
+      * static dispatch
+      * same algo without depending fully on the concerete type?
+      * applies to data and functions
+        * eg data `class List<T>`
+        * eg function `<T> bool add (T, List<T>)`
+      * eg Haskell `data List a = Nil | Cons a (List a)` or Java `class List<T>`
+    * subtype/inclusion
+      * virtual function
+      * single and dynamic dispatch
+      * multiple dispatch
+      * predicate dispatch
+      * according to Liskov substitution
+        * note: what I often want is full subsitution to make a monomorphic call
+      * usually resolved dynamically (ie dynamic dispatch)
+        * can be static dispatch for complex things like Template Metaprogramming (and CRTP)
+      * eg `Cat is Animal, Dog is Animal, talk (Animal)`
+    * row polymorphism (duck typing)
+      * structural typing losing type information
+    * polytypism?
+      * more general than polymorphic but need to R&D...
+  * all polymorphism constrained to monomorphic constraints? must be able to monomorphized?
+    * need more than this requirement as we need for comptime known abstraction?
+      * b/c will be result of conditional or array and we won't know what the concrete type is?
 
 
 
@@ -610,176 +692,6 @@ Here are some of the tools Elder provides which can replace some common use-case
   * Note that this is a general compiler tool to support multiple aspects of code like: `#version(#shadow), #version(#mutate), #version(#shadow or #mutate)` and really deserves it's own discussion.
 
 
-## Enum
-------------------------------------------------------------------------------------------------------------
-
-Enumerations (enums) are a way to express one of many possible variants.
-
-This abstraction unifies multiple concepts:
-* C-style enums
-* C-style unions
-* Java-style enums?
-* Algebraic Data Types (ADT) often used if functional languages
-
-### Syntax
-
-To define an new enum uses the `Enum` type.
-It interprets the data syntax (often records) as the variants of the enum like:
-```
-Color = Enum
-  Red   = _
-  Green = _
-  Blue  = _
-```
-Notice that:
-* Each child of Enum are its possible variants
-* Each child starts with a upper-case name
-* The ackward syntax is a consequence of each entry is a record.
-  Record values are essential while names are optional.
-* Enum names without values is quite rare.
-
-If we want to interpret the record entries as only names you must use a metaprogramming directive.
-The directive rewrites value literals as names with `None` as the value.
-This is equivalent to the previous example:
-```
-Color = Enum
-  #Names
-    Red
-    Green
-    Blue
-```
-
-### Simple
-
-Most often, enums will use values.
-
-Values can whatever a developer needs.
-As simple as `Int` or as complex as a function.
-
-Consider a simple example modeling primary colors:
-```
-StopLight = Enum
-  Green  = 0
-  Yellow = 1
-  Red    = 2
-
-StopLight = Enum
-  Green, Yellow, Red == 0 .. 2
-```
-
-### ADT-like
-
-Enums can be much more algebraic data types (ADT).
-
-Consider an example takes from OCaml website to model simple arithmetic:
-```
-type expr =
-    | Plus   of expr * expr  (* a + b *)
-    | Minus  of expr * expr  (* a - b *)
-    | Times  of expr * expr  (* a * b *)
-    | Divide of expr * expr  (* a / b *)
-    | Var    of string       (* "x", "y", etc. *);;
-
-(* model 'n * (x + y)' *)
-Times (Var "n", Plus (Var "x", Var "y"));;
-```
-
-We can recreate with Tozen:
-```
-Expr = Enum
-  Plus   = (Expr, Expr) // a + b
-  Minus  = (Expr, Expr) // a - b
-  Times  = (Expr, Expr) // a * b
-  Divide = (Expr, Expr) // a / b
-  Var    = String       // "x", "y", etc.
-
-// model 'n * (x + y)'
-Times(Var("n", Plus(Var("x"), Var("y")))) // all ()
-Times Var("n", Plus(Var("x"), Var("y")))  // drop outermost ()?
-Times Var "n", Plus Var "x"; Var "y"      // drop all ()?
-```
-
-Notice that:
-* Each arm can use the parent `Enum` generalize over itself
-* Each arm can accept multiple inputs
-* Each arm with signatures (not literals) are a Type
-* When unambigous, can use the name of each arm instead of the fully qualified name
-  * eg use `Plus` when unambigous, otherwise fully pathed version is `Expr/Plus`
-
-### Enum of Enum
-
-Enums can be arbitrarily nested.
-
-This allows one to create complex structures with flexible structure.
-
-Consider a example which uses nesting and enums which depend on each other:
-```
-Cup = Enum
-  Paper     = U8
-  Wood     = Bool
-  Mug = Enum
-    Tea = (Inner)
-    Coffee = (Outer)
-    Z = (A, Y)?
-
-enu-0 = B(false)
-enu-1 = Y(
-```
-
-Notice that:
-* nested enums can depend on outer, but not vice-versa
-* 
-
-### Access
-
-
-### Complex
-
-Notes:
-* Java-like?
-* Nested ADT
-* GADT?
-
-
-### Function Value?
-
-
-
-### Reduction
-
-
-
-
-
-
-
-
-Notes:
-* layout
-* size
-* total?
-* how do enum constructors differ from comptime function constructors?
-* ex match?
-  ```
-  Shape = Enum
-    Circle   = (radius :Whole)
-    Triangle = (side-a :Whole, side-b :Whole, side-c :Whole)
-    Square   = (side-a :Whole)
-
-  Shape/Circle(1)
-  Shape/Triangle(1, 2, 3)
-  Shape/Square(1)
-
-  ??? look at Haskell and others too ???
-  - should we also match nested values?
-  - destructure based on specific values or something not possible w/ GC?
-  match(shape)
-    Shape/Circle   = (radius)
-    Shape/Triangle = (side-a, side-b, side-c)
-    Shape/Square   = (side-a)
-  ```
-
-
 ## Array
 ------------------------------------------------------------------------------------------------------------
 
@@ -890,14 +802,34 @@ arr/2 = 7
 log(arr) // [x = 6, 4, z = 7]
 ``
 
+### Psuedo Dynamic
+
+Notes:
+* pair w/ holes
+* can delay use of fields until later w/ holes
+* only fields usable when determined at comptime can be used
+  * all holes must be filled till only those fields can be used (but rest can?)
+* 
+
 ### Invalid
 
-There are various illegal forms which the compiler can statically determine and will throw a comptime error:
+There are various illegal forms, which the compiler can statically determine, and will throw a comptime error.
+
+This is to prevent obvious errors like:
 * `Array.len` is less than number of values
   ```
   // comptime error b/c: 2 < 3
   arr :[2] = [0, 1, 2]
   ```
+* 
+
+
+Notes:
+* Arbitrary extension until use?
+  * copy when needed? or other resolution?
+* holes
+* copy? reference?
+  * container vs conent?
 * 
 
 
@@ -1020,6 +952,179 @@ struct/'my name' // False
 
 
 
+
+## Enum
+------------------------------------------------------------------------------------------------------------
+
+Enumerations (enums) are a way to express one of many possible variants.
+
+This abstraction unifies multiple concepts:
+* C-style enums
+* C-style unions
+* Java-style enums?
+* Algebraic Data Types (ADT) often used if functional languages
+
+### Syntax
+
+To define an new enum uses the `Enum` type.
+It interprets the data syntax (often records) as the variants of the enum like:
+```
+Color = Enum
+  Red   = _
+  Green = _
+  Blue  = _
+```
+Notice that:
+* Each child of Enum are its possible variants
+* Each child starts with a upper-case name
+* The ackward syntax is a consequence of each entry is a record.
+  Record values are essential while names are optional.
+* Enum names without values is quite rare.
+
+If we want to interpret the record entries as only names you must use a metaprogramming directive.
+The directive rewrites value literals as names with `None` as the value.
+This is equivalent to the previous example:
+```
+Color = Enum
+  #Names
+    Red
+    Green
+    Blue
+```
+
+### Simple
+
+Most often, enums will use values.
+
+Values can be whatever a developer needs.
+As simple as `Int` or as complex as a function.
+
+Consider a simple example modeling primary colors:
+```
+StopLight = Enum
+  Green  = 0
+  Yellow = 1
+  Red    = 2
+
+StopLight = Enum
+  Green, Yellow, Red == 0 .. 2
+```
+
+### Algebraic Data Type - like
+
+Enums can be much more like algebraic data types (ADT).
+
+Consider an example takes from OCaml website to model simple arithmetic:
+```
+type expr =
+    | Plus   of expr * expr  (* a + b *)
+    | Minus  of expr * expr  (* a - b *)
+    | Times  of expr * expr  (* a * b *)
+    | Divide of expr * expr  (* a / b *)
+    | Var    of string       (* "x", "y", etc. *);;
+
+(* model 'n * (x + y)' *)
+Times (Var "n", Plus (Var "x", Var "y"));;
+```
+
+We can recreate with Tozen:
+```
+Expr = Enum
+  Plus   = (Expr, Expr) // a + b
+  Minus  = (Expr, Expr) // a - b
+  Times  = (Expr, Expr) // a * b
+  Divide = (Expr, Expr) // a / b
+  Var    = String       // "x", "y", etc.
+
+// model 'n * (x + y)'
+Times(Var("n", Plus(Var("x"), Var("y")))) // all ()
+Times Var("n", Plus(Var("x"), Var("y")))  // drop outermost ()?
+Times Var "n", Plus Var "x"; Var "y"      // drop all ()?
+```
+
+Notice that:
+* Each arm can use the parent `Enum` generalize over itself
+* Each arm can accept multiple inputs
+* Each arm with signatures (not literals) are a Type
+* When unambigous, can use the name of each arm instead of the fully qualified name
+  * eg use `Plus` when unambigous, otherwise fully pathed version is `Expr/Plus`
+
+### Enum of Enum
+
+Enums can be arbitrarily nested.
+
+This allows one to create complex structures with flexible structure.
+
+Consider a example which uses nesting and enums which depend on each other:
+```
+Cup = Enum
+  Paper     = U8
+  Wood     = Bool
+  Mug = Enum
+    Tea = (Inner)
+    Coffee = (Outer)
+    Z = (A, Y)?
+
+enu-0 = B(false)
+enu-1 = Y(
+```
+
+Notice that:
+* nested enums can depend on outer, but not vice-versa
+* 
+
+### Access
+
+
+### Complex
+
+Notes:
+* Java-like?
+* Nested ADT
+* GADT?
+
+
+### Function Value?
+
+
+
+### Reduction
+
+
+
+
+
+
+
+
+Notes:
+* layout
+* size
+* total?
+* how do enum constructors differ from comptime function constructors?
+* ex match?
+  ```
+  Shape = Enum
+    Circle   = (radius :Whole)
+    Triangle = (side-a :Whole, side-b :Whole, side-c :Whole)
+    Square   = (side-a :Whole)
+
+  Shape/Circle(1)
+  Shape/Triangle(1, 2, 3)
+  Shape/Square(1)
+
+  ??? look at Haskell and others too ???
+  - should we also match nested values?
+  - destructure based on specific values or something not possible w/ GC?
+  match(shape)
+    Shape/Circle   = (radius)
+    Shape/Triangle = (side-a, side-b, side-c)
+    Shape/Square   = (side-a)
+  ```
+
+
+
+
 ## Reference
 ------------------------------------------------------------------------------------------------------------
 
@@ -1047,39 +1152,84 @@ Notes:
       * others?
 * 
 
-## Optional (or better?)
+
+## Result
+------------------------------------------------------------------------------------------------------------
+
+Programs sometimes fail is simple, knowable ways.
+Instead of a full Exception system, a simple value representation can be used.
+Simple problems should have simple solutions.
+
+To model these cases, we add a new type:
+```
+Result = #do (T :Type, E :Type) ->
+  Enum
+    Ok  = T
+    Err = E
+```
+Notice that:
+* The definition uses `#do` in order to construct a complex expression at comptime
+* The `Result` is an `Enum` of 2 arms of `Ok` and `Err` to represent each case
+* The `Result` type replaces other value types like `Option`, `Maybe`, `Either`.
+  For more complex exception handling one must use the full exception system.
+
+### Usage
+
+```
+// TODO:
+// - Should we have unique indexes to determine categories of error?
+//   - this close to Zig universal index of errors?
+
+is-user-logged-in = Fn (username :String) -> Result(Bool, String)
+  db = connect-to-db()
+  if (not db) return Err("Cannot connect to db")
+
+  user = db.find-user(username)
+  if (not user) return Err("Cannot find user")
+
+  return user.is-logged-in()
+
+res = is-user-logged-in("Hugh Mann")
+//res :Result(Bool, String) =  is-user-logged-in("Hugh Mann")
+
+match(res)
+  Ok(is-logged-in = Bool)   -> log("Am I logged in: \(is-logged-in)?")
+  Err(msg         = String) -> log("Error determining if logged in b/c: \(msg)")
+```
+
+### Pattern Match
+
+### Limitations
+
+### Examples
+
+
+
+Notes:
+* not-propogate unless explicit return?
+* must handle in current context?
+  * ie don't allow propogation and instead use more complex system?
+* a way to append multiple contextual details to caller of caller?
+  * like Haskell-style threading and Monad composing of State monad?
+    * I think Swift does some of this? maybe Scala as well?
+* combine w/ builtin functions like throw, catch, etc. and others?
+  * look at Cone, Zig, Rust and how they combines these concepts?
+  * or more useful to keep it very simple?
+
+
+## Exception System
 ------------------------------------------------------------------------------------------------------------
 
 Notes:
-* Certainly could be useful to model simple Result-like diff than exceptions?
-* Has value or something else
-  * other
-    * no value
-    * exception
-    * alternative
 * An overall better idea to have an condition system?
   * or this a more complex and we have simple and complex ways to deal w/ error?
   * a compilation of: issue, resolution (proposed), solution
-* Zero-cost way to do so?
-  * Simple wrapper is most basic?
-* Rust-like Result:
-  ```
-  // Rust
-  enum Result<T, E>
-  {
-    Ok(T),
-    Err(E),
-  }
-
-  // Recreate in Tozen (using var, relator, and fns)?
-  Result = #do
-    T :TypeCapture
-    E :TypeCapture
-
-    Enum
-      Ok  = (T)
-      Err = (E)
-  ```
+* what ways can we improve a condition system?
+  * copy what makes sense from Zig?
+* the concext in which the issue occurs has the most contextual details
+  * ideally we can fix in place?
+    * also means we don't have to manage memory up/down the stack and instead stays in place?
+* 
 
 
 ## Lookup Table
@@ -1105,6 +1255,7 @@ Notes:
       * Panic
       * Reject Pogram
 * Comptime and runtime mixed?
+* Varargs? or this just a record w/ specific sugar?
 
 
 ## Selection
@@ -1415,22 +1566,128 @@ Notes:
 * a generalization of case?
 
 
+## Control Flow
+------------------------------------------------------------------------------------------------------------
+
+### `if` conditional
+
+Simple conditional testing is handled by the builtin `if` conditional which:
+* has sugar for multiple syntax forms
+* is an expression and replaces the need for a ternary operator
+* only tests `Bool` types (there aren't implicit casts)
+* often uses comparison (`==, !=, <, >, <=, >=`) and logical operators (`and, or, not`)
+
+Some examples of its usage:
+```
+x = 0
+y = 1
+z = 2
+
+// These are equivalent
+a =
+  if
+    x > 0 and y < 2
+  then
+    x
+  else
+    y
+
+a = if (x > 0 and y < 2) then x else y
+
+log a // 1
+
+// These are equivalent
+b =
+  if
+    x > 0 and y < 2
+  then
+    x
+
+b = if (x > 0 and y < 2) then x
+
+log b      // None         ?
+log b:type // Optional(U8) ?
+log b:type // U8 or None   ?
+
+//    if
+//      x
+//      y
+//      z
+//    then
+//      ...
+//    else
+//      ...
+//    
+//    if (x > 0)
+//      log x
+//    
+//    if (x, y, z) then (...)
+//    if (x, y, z) then (...) else (...)
+//    
+//    if (x and y and z) then (...)
+//    if (x and y and z) then (...) else (...)
+```
+
+Notes:
+* if, else-if, else
+* if is expression
+* if-let pattern?
+* bind to relators
+  * which relators are defined?
+* operators
+  * Literals: True, False
+  * comparison: ==, !=, <, >, <=, >=
+  * Boolean ops: and, or, not
+    * mix w/ comparison args
+      * eg `x > 0 and not y < 2`? or must be `(x > 0) and not (y < 2)`
+
+
+### `loop`
+
+Notes:
+* bind to relators
+  * which relators are defined?
+  * eg `loop:it` or `loop/it`?
+  * hold output, totals, intermediate variables in relators
+    * that way can avoid common pattern of declaring totals?
+* else
+  * when never runs? or use after?
+* before, body, after
+* continue expression
+  * used for incrementing?
+* break w/ result
+* labeled how?
+  * how to differentiate from result?
+    * `l = loop ...` and then later can use `l:result`?
+* inline
+* equivalent to `for`?
+  * parts: init (introduce vars, run once), test (when to continue loop), increment (after body)
+    * becomes:
+      * before 'for'
+      * test before body
+      * after body 
+    * ideas
+      ```
+      loop
+      ```
+* unify?
+  * `do`
+  * `for`
+  * `while`
+
+
 ## Operators
 ------------------------------------------------------------------------------------------------------------
 
 Instead of allowing arbitrary operators, there are a few builtin sets.
 These sets have special rules to match most languages.
 
+Developers are not allowed to create their own operators.
+The primary reason is there's no good way to express intent with symbols.
+The language is able to do so by enforcing a universal interpretation.
+
 Only similar groups of operators can be mixed without parentheses.
 Precedence is non-transitive and doesn't work between categories of operators.
-
-Operators are higher precedence than functions.
-
-Precedence:
-* Relator
-* Unary Operator
-* Infix Operator
-* Function
 
 ### Invoke
 
@@ -1439,11 +1696,16 @@ Operators can also be a few forms:
 * binary infix: `3 + 4`, `True or False`
   * infix requires a space between the operands
 * infix invoked like a fuction
-  * this is sugar which distributes the infix operator:
+  * this is sugar which distributes the infix operator over variable arguments
+  * useful for building subexpressions with repeated operator
+  * eg
     * `x + -(1, 2, 3)` becomes `x + (1 - 2 - 3)`
     * `a and or(b, c, d)` becomes `a and (b or c or d)`
 
 ### Arithmetic
+
+These all work on `Numeric` types.
+They follow the canonical mathematical precedence.
 
 In order of precedence:
 ```
@@ -1452,44 +1714,88 @@ In order of precedence:
 1 ** 2 // power     (binary, infix)
 1 *  2 // multiply  (binary, infix)
 1 /  2 // divide    (binary, infix)
-1 // 2 // divide floor? (binary, infix)
 1 +  2 // add       (binary, infix)
 1 -  2 // substract (binary, infix)
-1 %  2 // modulus   (binary, infix)
+1 %  2 // remainder division (binary, infix)
 1 %% 2 // modulus floor? (binary, infix)
 ```
 
-### Boolean Logic
+TODO:
+* overflow behavior
+  * overflow
+  * wrapping
+  * saturation
+  * error flag
+
+### Logic
+
+These only operate on `Bool` values.
+
+//These operate on many different types of values.
+//Most often, they're used with `Bool` types.
+//However they're also used for union and disjunction types.
+
+They follow the canonical logic precedence.
 
 In order of precedence:
 ```
-not False // Logical negation
+not False // Unary negation
 a and b   // Conjunction
-a or b    // Disjunction
-a xor b   // ???
+a or  b   // Disjunction
+```
+
+Which means this parses like:
+```
+a and not b or c and not d
+
+// equivalent to:
+(a and (not b)) or (c and (not d))
 ```
 
 ### Comparison
 
+These work on any values which can be compared and ordered.
+They always result in a `Bool` type.
+
 In order of precedence:
 ```
-a is   b // identity ???
-a isnt b // not identity ???
-a eq   b // ???
-a neq  b // ???
-a ==   b // equivalent ???
-a !=   b // not equivalent ???
-a <    b // less than
-a >    b // greater than
-a <=   b // less than or equal equivalent
-a >=   b // greater than or equal equivalent
+a == b // equivalent by value
+a != b // not equivalent by value
+a <  b // less than
+a >  b // greater than
+a <= b // less than or equal equivalent value
+a >= b // greater than or equal equivalent value
 ```
+
+Since comparison operators can only be used with one another, we allow some sugar for chaining multiple conditions.
+These only work for comparison operators (`<`, `>`, `<=`, `>=`) like:
+```
+a <  b <  c  =>  (a < b)  and (b < c)
+a >  b >  c  =>  (a > b)  and (b > c)
+a <= b <= c  =>  (a <= b) and (b <= c)
+a >= b >= c  =>  (a >= b) and (b >= c)
+a <  b >= c  =>  (a < b)  and (b >= c)
+a >  b <= c  =>  (a > b)  and (b <= c)
+```
+
+
+
+Q:
+* others?
+  ```
+  a is   b // identity ??? this may be equivalent as: a:ref == b:ref ?
+  a isnt b // not identity ??? this may be equivalent as: a:ref != b:ref ?
+  a eq   b // ???
+  a neq  b // ???
+  a id   b // ???
+  a nid  b // ???
+  ```
 
 ### Bitwise
 
 In order of precedence:
 ```
-~  // Bitwise negation
+~  // Bitwise unary negation
 >> // Bit shift right
 << // Bit shift left
 &  // Bitwise and
@@ -1497,16 +1803,60 @@ In order of precedence:
 ^  // Bitwise xor
 ```
 
+Notes:
+* Should these be specific extensions by import and the pattern means bitwise on import?
+  * b/c not generally useful?
+
+### Equality Testing?
+
+
 ### Mixed Operators and Functions
 
-Generally operators and functions are non-transitive.
-However, for practicality reasons a few operators and functions are allowed to work together.
-Both extremes cause issues.
-If everything is non-transitive, you end up with excessive parentheses and less terse code.
-If everything is transitive (explicit precedence), you constantly need to use tables to look up precedence issues.
+Operators have a relative precedence.
+This means within a group of operators they have precedence within the group.
+There is no precedence for operators across groups.
+It is also often not meaningful to mix operators without parentheses due to not having implicit casts (for example this is not meaningful `1 + (2 == 3)`).
 
+For practicality reasons, there is a global precedence for the main classifications.
+This was chosed as there's on a few rules to remember and it generally follows what developers expect.
+
+The precedence across classifications is (high to low):
+* Relator Path (`a/b:c.d`)
+* Unary Operator (`-a, not b`)
+* Infix Operator (`a + b, a or b, a <= b`)
+* Function Invocation (`sum a + b`)
+* Assign (`x = a`)
+
+This doesn't mean that different types of operators can still be logically mixed.
+For example, this isn't meaningful:
 ```
+a < b or not c == d
 ```
+This mixes multiple classifications of operators of comparison and boolean.
+
+Instead this would have to be reworked using parentheses:
+```
+(a < b) or not (c == d)
+```
+
+Notes:
+* what can, if anything, be mixed?
+  * function invocation? assign? relator?
+* how to handle association?
+* others in Zig:
+  ```
+  a +% b,  a +%= b   // wrapping add
+  a +| b,  a +|= b   // saturation add
+  a -% b,  a -%= b   // wrapping minus
+  a -| b,  a -|= b   // saturation minus
+  -%a                // saturation negation
+  a *% b,  a *%= b   // wrapping multiply
+  a *| b,  a *|= b   // saturation multiply
+  a <<| b, a <<|= b  // saturate shift left
+  a ++ b             // array concat (eg "ab" ++ "cd")
+  a ** b             // repeating pattern (eg "ab" ** 3)
+  ```
+
 
 
 ## Lambdas
@@ -1539,6 +1889,7 @@ This is equivalent to the previous example:
 
 When this translates to IR it is much more explicit:
 ```
+// Notice everything is named in IR to be explicit, even Lambdas
 lambda-0 = Lambda()
   :in
     x = 0
@@ -1629,8 +1980,6 @@ Although there are many relators are defined; a few describe the most common cas
   * Introduces a block over its entire set of children
   * Interprets each child as a step
   * Has relators (which act like keywords) to make development more terse of:
-    * `Fn:body/in` which refers to `Fn:in`
-    * `Fn:body/out` which refers to `Fn:out`
     * `Fn:body/return` for explicit early return
 
 A simple example which are all equivalent:
@@ -1642,6 +1991,13 @@ sum = Fn (x :U8 = 1, y :U8 = 2)
 // Explicit output type
 sum = Fn (x :U8 = 1, y :U8 = 2) -> U8
   x + y
+
+// Multiline using relators
+sum = Fn
+  :in  = (x :U8 = 1, y :U8 = 2)
+  :out = U8
+  :body
+    x + y
 
 // Fully explicit IR
 sum = Fn()
@@ -1699,7 +2055,7 @@ It also helps to dissambiguate when nesting functions.
 
 Consider a extending the sum function which manually detects overflow:
 ```
-// Definition
+// Use names :in and :out
 sum = Fn (x :U8 = 1, y :U8 = 2) -> (z :U8, is-overflow :Bool)
   tmp-sum :U16 = x + y
   is-overflow  = tmp-sum > U8:max
@@ -1707,13 +2063,13 @@ sum = Fn (x :U8 = 1, y :U8 = 2) -> (z :U8, is-overflow :Bool)
   if (!is-overflow)
     z = tmp-sum
 
-// A equivalent form using 'Fn:out' relator
+// A equivalent form using Fn:out relator
 sum = Fn (x :U8 = 1, y :U8 = 2) -> (U8, Bool)
-  tmp-sum :U16    = x + y
-  out/is-overflow = tmp-sum > U8:max
+  tmp-sum :U16 = x + y
+  sum:out/1    = tmp-sum > U8:max
 
   if (!is-overflow)
-    out/z = tmp-sum
+    sum:out/0 = tmp-sum
 
 // A equivalent form using last expression
 sum = Fn (x :U8 = 1, y :U8 = 2) -> (U8, Bool)
@@ -1739,10 +2095,10 @@ To that end, functions can nest arbitrarily deep so they can be as local as poss
 
 A simple example:
 ```
-average-squares = Fn (widths :Array(U8), heights :Array(U8), depths :Array(U8)) -> (U8, U8, U8)
+average-squares = Fn (widths :[]U8, heights :[]U8, depths :[]U8) -> (U8, U8, U8)
 
   // Declare inner function to sum over array
-  average = Fn (arr :Array(U8)) -> U8
+  average = Fn (arr :[]U8) -> U8
     tmp :U8
 
     each(arr)
@@ -1752,6 +2108,10 @@ average-squares = Fn (widths :Array(U8), heights :Array(U8), depths :Array(U8)) 
 
   average(widths), average(heights), average(depths)
 ```
+
+This does not create closures as it would require allocation hidden from the developer.
+Instead, this desugars to two functions where the nested functions are actually defined in the same scope and just generated on behalf of the developer.
+In cases where a closure would be created a developer must opt-in to an abstraction which can allocate them.
 
 ### Variable Lifetimes, Locations, and Scopes
 
@@ -1778,6 +2138,8 @@ There are multiple targets where variables can be defined respective to a `Fn` (
 * others?
   * before and after caller (1 additional stack frame)
     * this for propogation of values to survive until no longer needed?
+  * auto variable liftimes?
+    * propogate across multiple calls when last across all lifetimes?
 
 Similarly there are multiple storage locations to aid in persistance across invocations, threads, modules, etc.
 Like most else they're associated to specific relators:
@@ -1806,14 +2168,14 @@ Notes:
 
 ### Modifiers
 
-Notes:
-* inline
-* stackless?
-* recursive?
+Functions have modifiers like:
+* `#inline`: suggestion to compiler to inline where possible
+* `#must-inline`: must inline, else comptime exception
+* `#stackless`: ???
+* `#recursive`: ???
 
 
 ### Reusing Function Relators
-
 
 TODO:
 * hook
@@ -1824,6 +2186,21 @@ TODO:
 * branch-specific comptime values and memory
 * should we describe closure and such here or wait until we move to CLI or others?
 * 
+
+### Constrained Closure
+
+
+### Dropping Parentheses
+
+Notes:
+* relates to association and precedence
+* right associative
+* only on the outermost functions and not mixed fixity?
+  * eg `f g h x => f(g(h(x)))` is fine but `f x + g y + z` is not?
+* 
+
+Notes:
+* rest and varargs? or this a more generic concept?
 
 
 ## Protocol
@@ -1923,6 +2300,19 @@ Notes:
   * eg builting Numeric types
 * 
 
+### Limitations
+
+As mentioned in the intro, Tozen doesn't have a runtime by default.
+This prevents the developer from writing non-optimal code without their knowledge.
+A developer must opt-into costs.
+
+Depending on their use, protocols can conflict with this requirement.
+Here are some common examples which have hidden costs:
+* ...protocol in list...
+* ...protocol in conditional...
+* ...protocol to indirect memory? or this just 2 costs of indirection + protocol-in-list?...
+* ...others?...
+
 
 ## Exception
 ------------------------------------------------------------------------------------------------------------
@@ -1968,43 +2358,30 @@ Notes:
   * others?
     * implementation details?
     * effects?
-* how ot codify Protocol depending on implementation will have a risk?
+* how to codify Protocol depending on implementation will have a risk?
   * eg `Integral / Integral` is not able to error if `Integral = Whole` but will if `Integral = Int` (or anything which constains zero
   * how to make this understandable?
+* more about issues and resolution
+  * if we want to ignore the issue then it should be fully erased?
+* 
+
 
 ## Module
 ------------------------------------------------------------------------------------------------------------
 
 
-
-## Zero Cost Abstractions
+## Memory
 ------------------------------------------------------------------------------------------------------------
 
+Memory management is only relevant for some build targets.
+When targeting JavaScript VM, manual memory management isn't very important.
+When targeting native, it is essential.
+
+
+
 Notes:
-* substitution
-* constant-time
-* resource
-  * thread
-  * open/close file
-* diff aspects
-  * data
-  * execution
-    * phase/lifetime
-    * branch
-    * stack
-  * task
-    * unit of work
-    * tick/cycle
-  * comptime/code
-  * dependencies
-  * location
-    * global
-    * module
-    * fn
-      * call context
-      * defn context
-    * block
-* cost and resolution model
-  * used to make costs clear and diff ways to resolve these costs
-  * dev must make explicit
-* 
+* Often handled for you depending on memory layout, access patterns, and compositions
+* Compatibility compiler directives to make compatible w/ C API, packed, and custom layouts (eg data)
+* Default/Global allocator?
+  * eg JavaScript allocator is to JavaScript VM GC
+  * eg HTML allocator is to HTML static analysis or None
