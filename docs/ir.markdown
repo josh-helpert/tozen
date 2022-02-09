@@ -5,14 +5,14 @@ description: Universal, consistent, and explicit representation of Tozen Languag
 permalink: ir
 ---
 
-The most explicit level of Tozen is its internal intermediate representation (IR).
+The most explicit level of Tozen is its intermediate representation (IR).
 Although developers are free to write Tozen using IR, we provide the higher-level, ergonomic, sugar levels which ultimately translate into this IR.
 
 Many higher level syntaxes are more expressive but ultimately reduce to this core syntax.
 Keeping the set of core elements simple makes it easier for tools to be developed for it.
 It is also rare that a developer will use it directly as the higher level syntaxes are more ergonomic.
 
-This is also how we interface with many other languages.
+IR is also how we interface with many other languages, runtimes, VMs, frameworks, among others.
 
 
 ## Basic Types and Literals
@@ -21,7 +21,7 @@ This is also how we interface with many other languages.
 Tozen reserves some common types to assure they have a universal meaning.
 
 This doesn't mean they have the same cost or representation on each build target.
-For example, `I8` is implemented differently in `JavaScript` compared to the `JVM`.
+For example, `I8` (ie 8 bit Integer) is implemented differently in `JavaScript VM` compared to the `Java VM`.
 When types are available on a target, they are guaranteed to function the same even if have different costs.
 
 ### Basic Types
